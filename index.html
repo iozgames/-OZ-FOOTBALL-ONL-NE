@@ -237,8 +237,19 @@
   .lb-trophy{ font-weight:800; color:var(--gold2); font-size:13.5px; }
 
   #toast{
-    position:fixed; bottom:8px; left:8px; right:8px; z-index:50;
-    color:#ff8a8a; font-size:12px; text-align:center; max-width:440px; margin:0 auto;
+    position:fixed; top:0; left:0; right:0; z-index:999;
+    background:#ef4444; color:#fff; font-size:12.5px; text-align:center;
+    padding:0; max-height:0; overflow:hidden;
+    transition:max-height 0.2s ease, padding 0.2s ease;
+  }
+  #toast.show{ padding:10px 36px 10px 12px; max-height:80px; }
+  #toast .dismiss{
+    position:absolute; right:8px; top:6px; background:none; border:none;
+    color:#fff; font-size:16px; cursor:pointer;
+  }
+  #build-tag{
+    position:fixed; bottom:4px; right:8px; z-index:998;
+    font-size:9px; color:rgba(238,242,255,0.35); pointer-events:none;
   }
   #config-warning{ position:fixed; top:8px; left:8px; right:8px; color:var(--gold2); font-size:11px; text-align:center; max-width:440px; margin:0 auto; z-index:50; }
 </style>
@@ -335,10 +346,25 @@
 
 </div>
 
-<div id="toast"></div>
+<div id="toast"><span id="toast-text"></span><button class="dismiss" id="toast-dismiss">✕</button></div>
+<div id="build-tag"></div>
 <div id="config-warning"></div>
 
+<script>
+  window.__iozAppBooted = false;
+  setTimeout(function(){
+    if (!window.__iozAppBooted){
+      var t = document.getElementById('toast');
+      var tt = document.getElementById('toast-text');
+      if (t && tt){
+        tt.textContent = 'App failed to start (Firebase scripts may be blocked by your network/ad-blocker). Try another network or disable ad-blocker.';
+        t.classList.add('show');
+      }
+    }
+  }, 7000);
+</script>
 <script type="module">
+  window.__iozAppBooted = true;
   import {
     initializeApp
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -396,10 +422,19 @@
   }
 
   const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
   const configWarning = document.getElementById('config-warning');
   const usernameError = document.getElementById('username-error');
-  function showToast(msg){ toast.textContent = msg || ''; if(msg) setTimeout(()=>{ if(toast.textContent===msg) toast.textContent=''; }, 4000); }
+  function showToast(msg){
+    if (!msg){ toast.classList.remove('show'); toastText.textContent=''; return; }
+    toastText.textContent = msg;
+    toast.classList.add('show');
+  }
+  document.getElementById('toast-dismiss').onclick = () => showToast('');
   function showUsernameError(msg){ usernameError.textContent = msg || ''; }
+
+  const BUILD_TAG = 'build v4';
+  document.getElementById('build-tag').textContent = BUILD_TAG;
 
   window.addEventListener('error', (e)=> showToast('Error: ' + e.message));
   window.addEventListener('unhandledrejection', (e)=> showToast('Error: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)));
