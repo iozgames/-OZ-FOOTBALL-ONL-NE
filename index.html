@@ -462,18 +462,58 @@
     db = getFirestore(app);
     provider = new GoogleAuthProvider();
 
-    getRedirectResult(auth).catch((e)=> showToast(translateAuthError(e)));
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const googleBtn = document.getElementById('google-btn');
 
-    document.getElementById('google-btn').onclick = async () => {
+    // Redirect flow sonrası geri dönünce burası tetiklenir; sonucu bekleyene kadar
+    // butonu kilitleyip kullanıcıya "giriş yapılıyor" geri bildirimi veriyoruz.
+    googleBtn.disabled = true;
+    googleBtn.textContent = 'Loading...';
+    getRedirectResult(auth)
+      .catch((e)=> showToast(translateAuthError(e)))
+      .finally(() => {
+        googleBtn.disabled = false;
+        googleBtn.textContent = 'Sign in with Google';
+      });
+
+    googleBtn.onclick = async () => {
       showToast('');
+      googleBtn.disabled = true;
+      googleBtn.textContent = 'Signing in...';
+
+      // Mobil tarayıcılarda Google'ın popup penceresi genelde e-posta seçilir
+      // seçilmez kendiliğinden kapanıyor ve bu "popup-closed-by-user" olarak
+      // algılanıyor; kullanıcı gerçekten iptal etmediği halde sessizce giriş
+      // ekranında kalınıyordu. Mobilde doğrudan redirect kullanmak bunu çözer.
+      if (isMobile){
+        try{
+          await signInWithRedirect(auth, provider);
+        } catch(e){
+          showToast(translateAuthError(e));
+          googleBtn.disabled = false;
+          googleBtn.textContent = 'Sign in with Google';
+        }
+        return;
+      }
+
       try{
         await signInWithPopup(auth, provider);
+        googleBtn.disabled = false;
+        googleBtn.textContent = 'Sign in with Google';
       } catch(e){
         const code = e.code || '';
-        if (code.includes('popup-blocked') || code.includes('cancelled-popup-request') || code.includes('operation-not-supported')){
-          signInWithRedirect(auth, provider);
-        } else if (!code.includes('popup-closed-by-user')){
+        if (code.includes('popup-blocked') || code.includes('cancelled-popup-request') || code.includes('operation-not-supported') || code.includes('popup-closed-by-user')){
+          try{
+            await signInWithRedirect(auth, provider);
+          } catch(e2){
+            showToast(translateAuthError(e2));
+            googleBtn.disabled = false;
+            googleBtn.textContent = 'Sign in with Google';
+          }
+        } else {
           showToast(translateAuthError(e));
+          googleBtn.disabled = false;
+          googleBtn.textContent = 'Sign in with Google';
         }
       }
     };
