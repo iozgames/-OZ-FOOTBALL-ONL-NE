@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>İOZ FOOTBALL PENALTY ONLINE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070c17;
+    --bg2:#0c1526;
+    --panel:#101a2e;
+    --panel2:#152340;
+    --border:#22314f;
+    --text:#eef2ff;
+    --muted:#7b8bad;
+    --gold:#f2b705;
+    --gold2:#ffd966;
+    --green:#22c55e;
+    --red:#ef4444;
+    --chat1:#1d4ed8;
+    --chat2:#1e3a8a;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    overflow:hidden;
+  }
+  .display{ font-family:'Anton',sans-serif; letter-spacing:0.5px; }
+
+  #app{
+    position:fixed; inset:0;
+    max-width:440px; margin:0 auto;
+    background:
+      radial-gradient(ellipse 500px 300px at 50% -10%, rgba(242,183,5,0.16), transparent 60%),
+      radial-gradient(ellipse 400px 300px at 100% 100%, rgba(34,197,94,0.10), transparent 60%),
+      linear-gradient(180deg, var(--bg2) 0%, var(--bg) 40%);
+    display:flex; flex-direction:column;
+    height:100%;
+    position:relative;
+    overflow:hidden;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+  }
+
+  /* stadium net pattern - signature background element */
+  .net-bg{
+    position:absolute; inset:0; z-index:0; opacity:0.10; pointer-events:none;
+    background-image:
+      repeating-linear-gradient(115deg, rgba(238,242,255,0.6) 0px, rgba(238,242,255,0.6) 1px, transparent 1px, transparent 26px),
+      repeating-linear-gradient(65deg, rgba(238,242,255,0.6) 0px, rgba(238,242,255,0.6) 1px, transparent 1px, transparent 26px);
+  }
+
+  .screen{
+    position:relative; z-index:1;
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:18px; padding:28px; text-align:center;
+  }
+  .screen.hidden{ display:none; }
+
+  h1.brand{
+    font-size:30px; line-height:1.05; margin:0;
+    text-transform:uppercase;
+    color:var(--gold2);
+    text-shadow:0 0 26px rgba(242,183,5,0.45);
+  }
+  h1.brand small{ display:block; font-size:14px; color:var(--text); letter-spacing:2px; margin-top:4px; }
+  p.sub{ color:var(--muted); font-size:13px; max-width:280px; margin:0; }
+
+  .btn{
+    padding:13px 22px; border-radius:12px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); cursor:pointer;
+    font-size:15px; font-weight:600; font-family:inherit;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-gold{ background:linear-gradient(180deg,var(--gold2),var(--gold)); color:#1a1400; border:none; box-shadow:0 6px 20px rgba(242,183,5,0.35); }
+  .btn-ghost{ background:transparent; }
+  .btn-block{ width:100%; }
+  input[type=text]{
+    padding:12px 14px; border-radius:12px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); width:260px; text-align:center;
+    font-family:inherit; font-size:15px;
+  }
+  .error{ color:#ff8a8a; font-size:12.5px; min-height:16px; }
+
+  /* ---- Home ---- */
+  #home-screen{ justify-content:flex-start; padding:0; }
+  #home-header{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid var(--border);
+    background:rgba(16,26,46,0.6); backdrop-filter:blur(6px);
+  }
+  #home-header .who{ text-align:left; }
+  #home-header .who .name{ font-weight:700; font-size:14px; }
+  #home-header .who .sub{ font-size:11px; color:var(--muted); }
+  .trophy-chip{
+    display:flex; align-items:center; gap:6px;
+    background:var(--panel2); border:1px solid var(--border);
+    padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; color:var(--gold2);
+  }
+  #home-body{
+    flex:1; width:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:22px; position:relative;
+  }
+  .glow-ball{
+    width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, #cfd6e6 55%, #8b93a3 100%);
+    box-shadow:0 0 60px rgba(242,183,5,0.35), inset 0 -8px 14px rgba(0,0,0,0.25);
+    display:flex; align-items:center; justify-content:center; font-size:46px;
+    animation:float 3.2s ease-in-out infinite;
+  }
+  @keyframes float{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-10px);} }
+  #leaderboard-link{
+    position:absolute; top:14px; right:14px;
+    font-size:12px; padding:8px 12px;
+  }
+
+  /* ---- Matchmaking button (bottom right) ---- */
+  #match-fab{
+    position:absolute; right:18px; bottom:22px; z-index:5;
+    border:none; cursor:pointer; font-family:inherit;
+    padding:16px 20px; border-radius:18px;
+    background:linear-gradient(180deg,var(--gold2),var(--gold));
+    color:#1a1400; font-weight:800; font-size:14px; text-transform:uppercase;
+    box-shadow:0 10px 28px rgba(242,183,5,0.38);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  #match-fab span.small{ font-size:10px; font-weight:600; opacity:0.75; text-transform:none; }
+  #match-fab:active{ transform:scale(0.96); }
+
+  /* ---- Chat bubble + panel (bottom left) ---- */
+  #chat-fab{
+    position:absolute; left:18px; bottom:22px; z-index:6;
+    width:52px; height:52px; border-radius:50%; border:1px solid var(--border);
+    background:var(--panel2); color:var(--text); font-size:22px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  #chat-panel{
+    position:absolute; left:14px; bottom:14px; z-index:10;
+    width:260px; max-height:340px;
+    background:linear-gradient(165deg,var(--chat1),var(--chat2));
+    border-radius:18px; border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 20px 50px rgba(0,0,0,0.5);
+    display:flex; flex-direction:column; overflow:hidden;
+    transform-origin:0% 100%;
+    transform:scale(0.1); opacity:0; pointer-events:none;
+    transition:transform 0.28s cubic-bezier(.2,.9,.3,1.3), opacity 0.2s ease;
+  }
+  #chat-panel.open{ transform:scale(1); opacity:1; pointer-events:auto; }
+  #chat-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.18);
+    color:#fff; font-weight:700; font-size:13px;
+  }
+  #chat-head button{ background:none; border:none; color:#fff; font-size:16px; cursor:pointer; opacity:0.85; }
+  #chat-messages{ flex:1; overflow-y:auto; padding:10px 12px; display:flex; flex-direction:column; gap:8px; min-height:120px; }
+  .cmsg{ max-width:85%; }
+  .cmsg .cname{ font-size:10px; color:#cfe0ff; margin-bottom:1px; }
+  .cmsg .ctext{ background:rgba(255,255,255,0.14); color:#fff; padding:6px 10px; border-radius:10px; font-size:12.5px; word-wrap:break-word; }
+  .cmsg.own{ align-self:flex-end; text-align:right; }
+  .cmsg.own .ctext{ background:#fff; color:var(--chat2); }
+  #chat-input-row{ display:flex; gap:6px; padding:8px; border-top:1px solid rgba(255,255,255,0.18); }
+  #chat-input-row input{
+    flex:1; padding:8px 10px; border-radius:10px; border:none; font-size:12.5px;
+    background:rgba(255,255,255,0.16); color:#fff;
+  }
+  #chat-input-row input::placeholder{ color:rgba(255,255,255,0.6); }
+  #chat-input-row button{
+    border:none; border-radius:10px; background:#fff; color:var(--chat2);
+    padding:8px 12px; font-weight:700; font-size:12px; cursor:pointer;
+  }
+
+  /* ---- Searching overlay ---- */
+  #searching-screen{ gap:26px; }
+  .radar{
+    width:110px; height:110px; border-radius:50%;
+    border:3px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .radar::before{
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:3px solid var(--gold); border-top-color:transparent; border-right-color:transparent;
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  #search-timer{ font-size:34px; font-weight:800; }
+  #search-status{ color:var(--muted); font-size:13px; }
+
+  /* ---- Match screen ---- */
+  #match-screen{ justify-content:flex-start; padding:16px; gap:12px; }
+  #match-vs{ display:flex; align-items:center; justify-content:space-between; width:100%; }
+  .vs-side{ flex:1; }
+  .vs-side .pname{ font-weight:700; font-size:14px; }
+  .vs-side .pscore{ font-size:26px; font-weight:800; color:var(--gold2); }
+  .vs-mid{ font-size:12px; color:var(--muted); padding:0 8px; }
+  #shot-log{
+    width:100%; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+    padding:6px 2px;
+  }
+  .shot-row{
+    display:flex; align-items:center; gap:10px; padding:9px 12px;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    font-size:13px; text-align:left;
+  }
+  .shot-row .icon{ font-size:18px; }
+  .shot-row.goal{ border-color:rgba(34,197,94,0.5); }
+  .shot-row.miss{ border-color:rgba(239,68,68,0.5); }
+  #turn-status{ font-size:13px; color:var(--muted); min-height:18px; }
+  #shoot-btn{ width:100%; padding:16px; font-size:16px; }
+  #shoot-btn:disabled{ opacity:0.4; }
+
+  /* ---- Result ---- */
+  #result-screen h1{ font-size:26px; margin:0; }
+  #result-trophy{ font-size:20px; font-weight:800; }
+  #result-trophy.pos{ color:var(--green); }
+  #result-trophy.neg{ color:var(--red); }
+  #result-trophy.zero{ color:var(--gold2); }
+
+  /* ---- Leaderboard ---- */
+  #leaderboard-screen{ align-items:stretch; justify-content:flex-start; padding:16px; gap:10px; }
+  #lb-list{ flex:1; width:100%; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .lb-row{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    padding:10px 12px; text-align:left;
+  }
+  .lb-rank{ width:26px; font-weight:800; color:var(--muted); text-align:center; }
+  .lb-rank.top1{ color:var(--gold2); } .lb-rank.top2{ color:#cbd5e1; } .lb-rank.top3{ color:#d0895a; }
+  .lb-name{ flex:1; font-weight:600; font-size:13.5px; }
+  .lb-trophy{ font-weight:800; color:var(--gold2); font-size:13.5px; }
+
+  #toast{
+    position:fixed; bottom:8px; left:8px; right:8px; z-index:50;
+    color:#ff8a8a; font-size:12px; text-align:center; max-width:440px; margin:0 auto;
+  }
+  #config-warning{ position:fixed; top:8px; left:8px; right:8px; color:var(--gold2); font-size:11px; text-align:center; max-width:440px; margin:0 auto; z-index:50; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="net-bg"></div>
+
+  <div id="auth-screen" class="screen">
+    <h1 class="brand">İOZ<br>FOOTBALL PENALTY<small>ONLINE</small></h1>
+    <p class="sub">Sign in to play online penalty shootouts and climb the leaderboard.</p>
+    <button id="google-btn" class="btn btn-gold">Sign in with Google</button>
+    <div id="auth-error" class="error"></div>
+  </div>
+
+  <div id="username-screen" class="screen" style="display:none;">
+    <h1 class="display" style="font-size:22px;">CHOOSE YOUR NAME</h1>
+    <p class="sub">This is how other players will see you.</p>
+    <input id="username-input" type="text" placeholder="Player name" maxlength="20">
+    <button id="username-submit-btn" class="btn btn-gold">Continue</button>
+    <div id="username-error" class="error"></div>
+  </div>
+
+  <div id="home-screen" class="screen hidden">
+    <div id="home-header">
+      <div class="who">
+        <div class="name" id="home-username">-</div>
+        <div class="sub">İOZ FOOTBALL PENALTY ONLINE</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="trophy-chip">🏆 <span id="home-trophies">0</span></div>
+        <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Log out</button>
+      </div>
+    </div>
+    <div id="home-body">
+      <button id="leaderboard-link" class="btn btn-ghost">🏆 Ranking</button>
+      <div class="glow-ball">⚽</div>
+      <div style="text-align:center;">
+        <div class="display" style="font-size:20px; color:var(--gold2);">READY TO SCORE?</div>
+        <p class="sub">Tap 1v1 MATCH to find an opponent.</p>
+      </div>
+      <button id="match-fab"><span>⚡ 1v1 MATCH</span><span class="small">find opponent</span></button>
+      <button id="chat-fab">💬</button>
+      <div id="chat-panel">
+        <div id="chat-head"><span>💬 Match Chat</span><button id="chat-close-btn">✕</button></div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-row">
+          <input id="chat-input" type="text" maxlength="300" placeholder="Say something...">
+          <button id="chat-send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="searching-screen" class="screen hidden">
+    <div class="radar">🔍</div>
+    <div id="search-timer" class="display">10</div>
+    <div id="search-status">Searching for a real opponent...</div>
+    <button id="cancel-search-btn" class="btn btn-ghost">Cancel</button>
+  </div>
+
+  <div id="match-screen" class="screen hidden">
+    <div id="match-vs">
+      <div class="vs-side">
+        <div class="pname" id="p1-name">You</div>
+        <div class="pscore" id="p1-score">0</div>
+      </div>
+      <div class="vs-mid display">VS</div>
+      <div class="vs-side" style="text-align:right;">
+        <div class="pname" id="p2-name">Opponent</div>
+        <div class="pscore" id="p2-score">0</div>
+      </div>
+    </div>
+    <div id="shot-log"></div>
+    <div id="turn-status">-</div>
+    <button id="shoot-btn" class="btn btn-gold">TAKE THE SHOT ⚽</button>
+  </div>
+
+  <div id="result-screen" class="screen hidden">
+    <div id="result-emoji" style="font-size:52px;">⚽</div>
+    <h1 class="display" id="result-title">DRAW</h1>
+    <div id="result-trophy">+0 🏆</div>
+    <button id="result-home-btn" class="btn btn-gold btn-block">Back to Home</button>
+  </div>
+
+  <div id="leaderboard-screen" class="screen hidden">
+    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+      <h1 class="display" style="font-size:20px; margin:0;">🏆 RANKING</h1>
+      <button id="lb-back-btn" class="btn btn-ghost">Back</button>
+    </div>
+    <div id="lb-list"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+<div id="config-warning"></div>
+
+<script type="module">
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+    getRedirectResult, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, getDoc, setDoc, updateDoc, deleteDoc,
+    runTransaction, addDoc, query, orderBy, limit, onSnapshot, getDocs,
+    serverTimestamp, increment
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // ============================================================
+  // Firebase Console > Project settings > Your apps (Web) config
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsSWXCV669KbXVSFzslxsZGYpwB_KitcM",
+    authDomain: "fotbalonline1.firebaseapp.com",
+    projectId: "fotbalonline1",
+    storageBucket: "fotbalonline1.firebasestorage.app",
+    messagingSenderId: "714198105774",
+    appId: "1:714198105774:web:f0cd081eba8ed76fb7773f"
+  };
+  // ============================================================
+
+  const MAX_CHAT_MESSAGES = 20;
+  const SEARCH_SECONDS = 10;
+  const GOAL_CHANCE = 0.68;
+  const SHOTS_PER_PLAYER = 2;
+
+  const BOT_FIRST = ["Kaan","Mert","Efe","Deniz","Arda","Berk","Ege","Emre","Poyraz","Kerem","Alex","Leo","Marco","Diego","Lucas","Noah","Mateo","Ivan","Ryan","Owen","Bruno","Theo"];
+  const BOT_LAST = ["Yıldız","Demir","Aydın","Kara","Şahin","Öztürk","Aksoy","Bulut","Rossi","Silva","Garcia","Muller","Novak","Costa","Baker","Fischer","Lopez","Moreau","Hansen"];
+
+  let app, auth, db, provider;
+  let currentUser = null;
+  let playerName = null;
+  let playerTrophies = 0;
+
+  let chatUnsub = null;
+  let matchUnsub = null;
+  let myQueueUnsub = null;
+  let searchInterval = null, searchTimeout = null, searchSecondsLeft = SEARCH_SECONDS;
+
+  let activeMatchId = null;
+  let activeMatchIsBot = false;
+  let trophiesApplied = false;
+
+  // ---------- DOM ----------
+  const screens = ['auth-screen','username-screen','home-screen','searching-screen','match-screen','result-screen','leaderboard-screen'];
+  function showScreen(name){
+    for(const s of screens){
+      document.getElementById(s).classList.toggle('hidden', s !== name);
+    }
+  }
+
+  const toast = document.getElementById('toast');
+  const configWarning = document.getElementById('config-warning');
+  const usernameError = document.getElementById('username-error');
+  function showToast(msg){ toast.textContent = msg || ''; if(msg) setTimeout(()=>{ if(toast.textContent===msg) toast.textContent=''; }, 4000); }
+  function showUsernameError(msg){ usernameError.textContent = msg || ''; }
+
+  window.addEventListener('error', (e)=> showToast('Error: ' + e.message));
+  window.addEventListener('unhandledrejection', (e)=> showToast('Error: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)));
+
+  function translateAuthError(e){
+    const code = e.code || '';
+    if (code.includes('unauthorized-domain')) return 'This domain is not authorized in Firebase (Authentication > Settings > Authorized domains).';
+    if (code.includes('popup-closed-by-user')) return 'Sign-in window closed, try again.';
+    return (e.message || 'Something went wrong.') + (code ? ' (' + code + ')' : '');
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+
+  const configOk = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('BURAYA');
+  if (!configOk){
+    configWarning.textContent = 'Firebase config missing.';
+    document.getElementById('google-btn').disabled = true;
+  } else {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    provider = new GoogleAuthProvider();
+
+    getRedirectResult(auth).catch((e)=> showToast(translateAuthError(e)));
+
+    document.getElementById('google-btn').onclick = async () => {
+      showToast('');
+      try{
+        await signInWithPopup(auth, provider);
+      } catch(e){
+        const code = e.code || '';
+        if (code.includes('popup-blocked') || code.includes('cancelled-popup-request') || code.includes('operation-not-supported')){
+          signInWithRedirect(auth, provider);
+        } else if (!code.includes('popup-closed-by-user')){
+          showToast(translateAuthError(e));
+        }
+      }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (!user){
+        playerName = null;
+        cleanupAll();
+        showScreen('auth');
+        return;
+      }
+      try{
+        const userDoc = await getDoc(doc(db,'users', user.uid));
+        if (userDoc.exists() && userDoc.data().username){
+          playerName = userDoc.data().username;
+          playerTrophies = userDoc.data().trophies || 0;
+          enterHome();
+        } else {
+          showScreen('username');
+        }
+      } catch(e){
+        showToast(translateAuthError(e));
+      }
+    });
+
+    document.getElementById('username-submit-btn').onclick = async () => {
+      showUsernameError('');
+      const name = document.getElementById('username-input').value.trim();
+      if (name.length < 3 || name.length > 20) return showUsernameError('Name must be 3-20 characters.');
+      if (!/^[a-zA-Z0-9ÇçĞğİıÖöŞşÜü_ ]+$/.test(name)) return showUsernameError('Only letters, numbers, spaces and _ allowed.');
+
+      const key = name.toLowerCase();
+      const btn = document.getElementById('username-submit-btn');
+      btn.disabled = true;
+      try{
+        await runTransaction(db, async (tx) => {
+          const usernameRef = doc(db,'usernames', key);
+          const takenSnap = await tx.get(usernameRef);
+          if (takenSnap.exists()) throw new Error('TAKEN');
+          tx.set(usernameRef, { uid: currentUser.uid });
+          tx.set(doc(db,'users', currentUser.uid), { username: name, trophies: 0 });
+        });
+        playerName = name;
+        playerTrophies = 0;
+        enterHome();
+      } catch(e){
+        if (e.message === 'TAKEN') showUsernameError('That name is already taken.');
+        else showUsernameError(translateAuthError(e));
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    // ---------- Home ----------
+    function enterHome(){
+      document.getElementById('home-username').textContent = playerName;
+      document.getElementById('home-trophies').textContent = playerTrophies;
+      showScreen('home-screen');
+      startChatListener();
+    }
+
+    function refreshTrophyDisplay(){
+      document.getElementById('home-trophies').textContent = playerTrophies;
+    }
+
+    document.getElementById('leaderboard-link').onclick = openLeaderboard;
+    document.getElementById('lb-back-btn').onclick = () => showScreen('home-screen');
+
+    async function openLeaderboard(){
+      showScreen('leaderboard-screen');
+      const list = document.getElementById('lb-list');
+      list.innerHTML = '<div class="sub">Loading...</div>';
+      try{
+        const q = query(collection(db,'users'), orderBy('trophies','desc'), limit(50));
+        const snap = await getDocs(q);
+        list.innerHTML = '';
+        let rank = 0;
+        snap.forEach((d) => {
+          rank++;
+          const data = d.data();
+          const row = document.createElement('div');
+          row.className = 'lb-row';
+          const rankClass = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+          row.innerHTML = `
+            <div class="lb-rank ${rankClass}">${rank}</div>
+            <div class="lb-name">${escapeHtml(data.username || '?')}</div>
+            <div class="lb-trophy">🏆 ${data.trophies || 0}</div>
+          `;
+          list.appendChild(row);
+        });
+        if (rank===0) list.innerHTML = '<div class="sub">No players yet.</div>';
+      } catch(e){
+        list.innerHTML = '<div class="error">Could not load ranking.</div>';
+      }
+    }
+
+    // ---------- Chat (bottom-left slide panel) ----------
+    const chatPanel = document.getElementById('chat-panel');
+    document.getElementById('chat-fab').onclick = () => chatPanel.classList.add('open');
+    document.getElementById('chat-close-btn').onclick = () => chatPanel.classList.remove('open');
+
+    function startChatListener(){
+      if (chatUnsub) return;
+      const q = query(collection(db,'messages'), orderBy('createdAt','desc'), limit(MAX_CHAT_MESSAGES));
+      chatUnsub = onSnapshot(q, (snapshot) => {
+        const list = [];
+        snapshot.forEach((d) => list.push({ id:d.id, ...d.data() }));
+        list.reverse();
+        renderChat(list);
+      });
+    }
+
+    function renderChat(list){
+      const box = document.getElementById('chat-messages');
+      box.innerHTML = '';
+      for (const m of list){
+        const div = document.createElement('div');
+        div.className = 'cmsg' + (currentUser && m.uid === currentUser.uid ? ' own' : '');
+        div.innerHTML = `<div class="cname">${escapeHtml(m.name)}</div><div class="ctext">${escapeHtml(m.content)}</div>`;
+        box.appendChild(div);
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChat(){
+      const input = document.getElementById('chat-input');
+      const content = input.value.trim();
+      if (!content || !currentUser || !playerName) return;
+      input.value = '';
+      try{
+        await addDoc(collection(db,'messages'), {
+          uid: currentUser.uid, name: playerName, content: content.slice(0,300), createdAt: serverTimestamp()
+        });
+        await pruneOldChat();
+      } catch(e){ showToast(e.message); }
+    }
+    async function pruneOldChat(){
+      const q = query(collection(db,'messages'), orderBy('createdAt','asc'));
+      const snap = await getDocs(q);
+      const extra = snap.size - MAX_CHAT_MESSAGES;
+      if (extra > 0){
+        await Promise.all(snap.docs.slice(0, extra).map((d)=> deleteDoc(d.ref)));
+      }
+    }
+    document.getElementById('chat-send-btn').onclick = sendChat;
+    document.getElementById('chat-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(); });
+
+    // ---------- Matchmaking ----------
+    document.getElementById('match-fab').onclick = startMatchmaking;
+    document.getElementById('cancel-search-btn').onclick = cancelMatchmaking;
+
+    async function startMatchmaking(){
+      showScreen('searching-screen');
+      searchSecondsLeft = SEARCH_SECONDS;
+      document.getElementById('search-timer').textContent = searchSecondsLeft;
+      document.getElementById('search-status').textContent = 'Searching for a real opponent...';
+
+      try{
+        await setDoc(doc(db,'queue', currentUser.uid), {
+          uid: currentUser.uid, name: playerName, createdAt: serverTimestamp(), matchId: null
+        });
+      } catch(e){
+        showToast('Could not join queue: ' + e.message);
+        showScreen('home-screen');
+        return;
+      }
+
+      // listen for someone else matching with me
+      myQueueUnsub = onSnapshot(doc(db,'queue', currentUser.uid), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+        if (data.matchId){
+          stopSearching(false);
+          joinMatch(data.matchId, false);
+        }
+      });
+
+      tryFindOpponent(); // immediate attempt
+      searchInterval = setInterval(tryFindOpponent, 1800);
+      searchTimeout = setInterval(() => {
+        searchSecondsLeft--;
+        document.getElementById('search-timer').textContent = Math.max(searchSecondsLeft,0);
+        if (searchSecondsLeft <= 0){
+          clearInterval(searchTimeout); searchTimeout = null;
+          onSearchTimeout();
+        }
+      }, 1000);
+    }
+
+    async function tryFindOpponent(){
+      if (!currentUser) return;
+      try{
+        const q = query(collection(db,'queue'), orderBy('createdAt','asc'), limit(10));
+        const snap = await getDocs(q);
+        let candidate = null;
+        snap.forEach((d) => {
+          if (candidate) return;
+          const data = d.data();
+          if (d.id !== currentUser.uid && !data.matchId) candidate = { id:d.id, data };
+        });
+        if (!candidate) return;
+
+        const matchRef = doc(collection(db,'matches'));
+        let created = false;
+        await runTransaction(db, async (tx) => {
+          const candRef = doc(db,'queue', candidate.id);
+          const candSnap = await tx.get(candRef);
+          if (!candSnap.exists() || candSnap.data().matchId) return; // taken already
+          const mySnap = await tx.get(doc(db,'queue', currentUser.uid));
+          if (!mySnap.exists() || mySnap.data().matchId) return;
+
+          tx.set(matchRef, {
+            order: [currentUser.uid, candidate.id],
+            names: { [currentUser.uid]: playerName, [candidate.id]: candSnap.data().name },
+            shots: [],
+            turnIndex: 0,
+            status: 'playing',
+            winner: null,
+            createdAt: serverTimestamp()
+          });
+          tx.update(candRef, { matchId: matchRef.id });
+          tx.update(doc(db,'queue', currentUser.uid), { matchId: matchRef.id });
+          created = true;
+        });
+        if (created){
+          stopSearching(false);
+          joinMatch(matchRef.id, true);
+        }
+      } catch(e){ /* ignore transient errors, will retry */ }
+    }
+
+    function onSearchTimeout(){
+      stopSearching(true);
+      startBotMatch();
+    }
+
+    function stopSearching(clearMyDoc){
+      if (searchInterval){ clearInterval(searchInterval); searchInterval = null; }
+      if (searchTimeout){ clearInterval(searchTimeout); searchTimeout = null; }
+      if (myQueueUnsub){ myQueueUnsub(); myQueueUnsub = null; }
+      if (clearMyDoc && currentUser){
+        deleteDoc(doc(db,'queue', currentUser.uid)).catch(()=>{});
+      }
+    }
+
+    function cancelMatchmaking(){
+      stopSearching(true);
+      showScreen('home-screen');
+    }
+
+    // ---------- Real 1v1 match ----------
+    function joinMatch(matchId, iAmCreator){
+      activeMatchId = matchId;
+      activeMatchIsBot = false;
+      trophiesApplied = false;
+      showScreen('match-screen');
+      document.getElementById('shot-log').innerHTML = '';
+      document.getElementById('shoot-btn').onclick = () => takeRealShot(matchId);
+
+      matchUnsub = onSnapshot(doc(db,'matches', matchId), (snap) => {
+        if (!snap.exists()) return;
+        renderMatch(snap.data());
+      });
+    }
+
+    function renderMatch(m){
+      const myUid = currentUser.uid;
+      const oppUid = m.order.find((u) => u !== myUid) || m.order[1];
+      document.getElementById('p1-name').textContent = 'You';
+      document.getElementById('p2-name').textContent = m.names[oppUid] || 'Opponent';
+
+      const myScore = m.shots.filter((s)=> s.uid===myUid && s.result==='goal').length;
+      const oppScore = m.shots.filter((s)=> s.uid===oppUid && s.result==='goal').length;
+      document.getElementById('p1-score').textContent = myScore;
+      document.getElementById('p2-score').textContent = oppScore;
+
+      const log = document.getElementById('shot-log');
+      log.innerHTML = '';
+      m.shots.forEach((s) => {
+        const row = document.createElement('div');
+        row.className = 'shot-row ' + s.result;
+        const who = s.uid === myUid ? 'You' : (m.names[s.uid] || 'Opponent');
+        const icon = s.result === 'goal' ? '⚽' : '🧤';
+        const text = s.result === 'goal' ? 'GOAL!' : 'SAVED!';
+        row.innerHTML = `<span class="icon">${icon}</span><span>${escapeHtml(who)} — ${text}</span>`;
+        log.appendChild(row);
+      });
+      log.scrollTop = log.scrollHeight;
+
+      const shootBtn = document.getElementById('shoot-btn');
+      const turnEl = document.getElementById('turn-status');
+
+      if (m.status === 'finished'){
+        shootBtn.disabled = true;
+        turnEl.textContent = 'Match finished.';
+        finishRealMatch(m, myUid, oppUid);
+        return;
+      }
+
+      const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
+      const isMyTurn = turnUid === myUid;
+      shootBtn.disabled = !isMyTurn;
+      turnEl.textContent = isMyTurn ? 'Your turn — take the shot!' : (m.names[turnUid] || 'Opponent') + ' is shooting...';
+    }
+
+    async function takeRealShot(matchId){
+      const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
+      const myUid = currentUser.uid;
+      try{
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db,'matches', matchId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) return;
+          const m = snap.data();
+          if (m.status !== 'playing') return;
+          const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
+          if (turnUid !== myUid) return;
+
+          const newShots = [...m.shots, { uid: myUid, result }];
+          const newTurnIndex = m.turnIndex + 1;
+          const totalShots = SHOTS_PER_PLAYER * 2;
+          let status = 'playing', winner = null;
+          if (newTurnIndex >= totalShots){
+            status = 'finished';
+            const s1 = newShots.filter((s)=> s.uid===m.order[0] && s.result==='goal').length;
+            const s2 = newShots.filter((s)=> s.uid===m.order[1] && s.result==='goal').length;
+            winner = s1 === s2 ? 'draw' : (s1 > s2 ? m.order[0] : m.order[1]);
+          }
+          tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner });
+        });
+      } catch(e){ showToast('Shot failed: ' + e.message); }
+    }
+
+    async function finishRealMatch(m, myUid, oppUid){
+      if (trophiesApplied) return;
+      trophiesApplied = true;
+      let delta = 0;
+      if (m.winner === 'draw') delta = 10;
+      else if (m.winner === myUid) delta = 30;
+      else delta = -10;
+      await applyTrophyDelta(delta);
+      showResult(m.winner === 'draw' ? 'draw' : (m.winner === myUid ? 'win' : 'lose'), delta);
+      if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+    }
+
+    // ---------- Bot match (local, no Firestore) ----------
+    function randomBotName(){
+      const f = BOT_FIRST[Math.floor(Math.random()*BOT_FIRST.length)];
+      const l = BOT_LAST[Math.floor(Math.random()*BOT_LAST.length)];
+      return f + ' ' + l;
+    }
+
+    function startBotMatch(){
+      activeMatchIsBot = true;
+      activeMatchId = null;
+      trophiesApplied = false;
+      const botName = randomBotName();
+      showScreen('match-screen');
+      document.getElementById('p1-name').textContent = 'You';
+      document.getElementById('p2-name').textContent = botName;
+      document.getElementById('p1-score').textContent = '0';
+      document.getElementById('p2-score').textContent = '0';
+      document.getElementById('shot-log').innerHTML = '';
+      document.getElementById('turn-status').textContent = 'Match starting...';
+      document.getElementById('shoot-btn').disabled = true;
+      document.getElementById('shoot-btn').onclick = null;
+
+      const order = ['you','bot'];
+      const shots = [];
+      let idx = 0;
+      const total = SHOTS_PER_PLAYER * 2;
+
+      function step(){
+        if (idx >= total){
+          const myScore = shots.filter((s)=>s.who==='you' && s.result==='goal').length;
+          const botScore = shots.filter((s)=>s.who==='bot' && s.result==='goal').length;
+          const winner = myScore===botScore ? 'draw' : (myScore>botScore ? 'you' : 'bot');
+          finishBotMatch(winner);
+          return;
+        }
+        const who = order[idx % 2];
+        document.getElementById('turn-status').textContent = who==='you' ? 'Your turn — take the shot!' : botName + ' is shooting...';
+        document.getElementById('shoot-btn').disabled = who !== 'you';
+        if (who === 'bot'){
+          setTimeout(() => {
+            const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
+            shots.push({ who:'bot', result });
+            renderBotShots(shots, botName);
+            idx++;
+            step();
+          }, 1100);
+        } else {
+          document.getElementById('shoot-btn').onclick = () => {
+            document.getElementById('shoot-btn').disabled = true;
+            const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
+            shots.push({ who:'you', result });
+            renderBotShots(shots, botName);
+            idx++;
+            step();
+          };
+        }
+      }
+      step();
+    }
+
+    function renderBotShots(shots, botName){
+      const myScore = shots.filter((s)=>s.who==='you' && s.result==='goal').length;
+      const botScore = shots.filter((s)=>s.who==='bot' && s.result==='goal').length;
+      document.getElementById('p1-score').textContent = myScore;
+      document.getElementById('p2-score').textContent = botScore;
+      const log = document.getElementById('shot-log');
+      log.innerHTML = '';
+      shots.forEach((s) => {
+        const row = document.createElement('div');
+        row.className = 'shot-row ' + s.result;
+        const who = s.who === 'you' ? 'You' : botName;
+        const icon = s.result === 'goal' ? '⚽' : '🧤';
+        const text = s.result === 'goal' ? 'GOAL!' : 'SAVED!';
+        row.innerHTML = `<span class="icon">${icon}</span><span>${escapeHtml(who)} — ${text}</span>`;
+        log.appendChild(row);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function finishBotMatch(winner){
+      if (trophiesApplied) return;
+      trophiesApplied = true;
+      let delta = 0;
+      if (winner === 'draw') delta = 10;
+      else if (winner === 'you') delta = 30;
+      else delta = -10;
+      await applyTrophyDelta(delta);
+      showResult(winner === 'draw' ? 'draw' : (winner === 'you' ? 'win' : 'lose'), delta);
+    }
+
+    // ---------- Shared result / trophies ----------
+    async function applyTrophyDelta(delta){
+      playerTrophies = Math.max(0, playerTrophies + delta);
+      refreshTrophyDisplay();
+      try{
+        await updateDoc(doc(db,'users', currentUser.uid), { trophies: increment(delta) });
+      } catch(e){ /* non-fatal */ }
+    }
+
+    function showResult(kind, delta){
+      const emojiEl = document.getElementById('result-emoji');
+      const titleEl = document.getElementById('result-title');
+      const trophyEl = document.getElementById('result-trophy');
+      if (kind === 'win'){ emojiEl.textContent='🏆'; titleEl.textContent='VICTORY'; }
+      else if (kind === 'lose'){ emojiEl.textContent='😔'; titleEl.textContent='DEFEAT'; }
+      else { emojiEl.textContent='🤝'; titleEl.textContent='DRAW'; }
+      trophyEl.textContent = (delta>0?'+':'') + delta + ' 🏆';
+      trophyEl.className = delta>0 ? 'pos' : (delta<0 ? 'neg' : 'zero');
+      showScreen('result-screen');
+    }
+
+    document.getElementById('result-home-btn').onclick = () => {
+      if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      activeMatchId = null;
+      showScreen('home-screen');
+    };
+
+    document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+    function cleanupAll(){
+      if (chatUnsub){ chatUnsub(); chatUnsub = null; }
+      if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      stopSearching(false);
+    }
+  }
+</script>
+</body>
+</html>
