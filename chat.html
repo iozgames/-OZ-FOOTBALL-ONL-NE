@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Oyunu - Sohbet</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #262b36;
+    --text: #e8eaed;
+    --muted: #8b93a3;
+    --accent: #5b8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  #auth-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+  #auth-screen h1 { margin: 0 0 4px; font-size: 20px; }
+  #auth-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; width: 100%; }
+  input[type=text], input[type=password] {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    width: 260px;
+  }
+  #auth-form { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  #toggle-mode { color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; background: none; border: none; }
+  #chat-screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 12px;
+    height: 100vh;
+  }
+  #chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 4px;
+  }
+  .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; background: var(--panel); }
+  .msg .name { font-size: 12px; color: var(--accent); margin-bottom: 2px; }
+  .msg .content { font-size: 14px; word-wrap: break-word; white-space: pre-wrap; }
+  .msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .msg.own { align-self: flex-end; background: #23324f; }
+  #input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 4px;
+    border-top: 1px solid var(--border);
+  }
+  #input-row input {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+  }
+  #error-box { color: #ff6b6b; font-size: 13px; min-height: 18px; }
+  #config-warning {
+    color: #ffb347;
+    font-size: 12px;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <h1>Test Oyunu</h1>
+  <div id="auth-subtitle">Giriş Yap</div>
+
+  <div id="auth-form">
+    <input id="username-input" type="text" placeholder="Oyuncu Adı" maxlength="20" autocomplete="username">
+    <input id="password-input" type="password" placeholder="Şifre" autocomplete="current-password">
+    <input id="password-confirm-input" type="password" placeholder="Şifre Tekrar" autocomplete="new-password" style="display:none;">
+    <button id="submit-btn" class="btn btn-primary">Giriş Yap</button>
+  </div>
+
+  <button id="toggle-mode" type="button">Hesabın yok mu? Kayıt ol</button>
+  <div id="error-box"></div>
+  <div id="config-warning"></div>
+</div>
+
+<div id="chat-screen">
+  <div id="chat-header">
+    <span id="user-label"></span>
+    <button id="logout-btn" class="btn">Çıkış Yap</button>
+  </div>
+  <div id="messages"></div>
+  <div id="input-row">
+    <input id="message-input" type="text" maxlength="500" placeholder="Mesajınızı yazın...">
+    <button id="send-btn" class="btn btn-primary" style="width:auto;">Gönder</button>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    limit,
+    onSnapshot,
+    getDocs,
+    deleteDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // ============================================================
+  // Firebase Console > Project settings > Your apps (Web) kısmından
+  // aldığın config.
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsSWXCV669KbXVSFzslxsZGYpwB_KitcM",
+    authDomain: "fotbalonline1.firebaseapp.com",
+    projectId: "fotbalonline1",
+    storageBucket: "fotbalonline1.firebasestorage.app",
+    messagingSenderId: "714198105774",
+    appId: "1:714198105774:web:f0cd081eba8ed76fb7773f"
+  };
+  // ============================================================
+
+  const MAX_MESSAGES = 20;
+  // Firebase Auth e-posta ister; oyuncu adını görünmez bir sahte e-postaya çeviriyoruz.
+  const FAKE_EMAIL_DOMAIN = 'fotbalonline1.local';
+
+  let app, auth, db, currentUser = null, unsubscribe = null;
+  let mode = 'login'; // 'login' | 'register'
+  const configOk = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('BURAYA');
+
+  const authScreen = document.getElementById('auth-screen');
+  const chatScreen = document.getElementById('chat-screen');
+  const errorBox = document.getElementById('error-box');
+  const configWarning = document.getElementById('config-warning');
+  const messagesEl = document.getElementById('messages');
+  const userLabel = document.getElementById('user-label');
+  const authSubtitle = document.getElementById('auth-subtitle');
+  const toggleModeBtn = document.getElementById('toggle-mode');
+  const submitBtn = document.getElementById('submit-btn');
+  const confirmInput = document.getElementById('password-confirm-input');
+  const usernameInput = document.getElementById('username-input');
+  const passwordInput = document.getElementById('password-input');
+
+  function showError(msg) { errorBox.textContent = msg || ''; }
+
+  window.addEventListener('error', (e) => showError('Beklenmeyen hata: ' + e.message));
+  window.addEventListener('unhandledrejection', (e) => showError('Beklenmeyen hata: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)));
+
+  function usernameToEmail(username) {
+    const clean = username.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_.-]/g, '');
+    return `${clean}@${FAKE_EMAIL_DOMAIN}`;
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    showError('');
+    if (mode === 'login') {
+      authSubtitle.textContent = 'Giriş Yap';
+      submitBtn.textContent = 'Giriş Yap';
+      toggleModeBtn.textContent = 'Hesabın yok mu? Kayıt ol';
+      confirmInput.style.display = 'none';
+    } else {
+      authSubtitle.textContent = 'Kayıt Ol';
+      submitBtn.textContent = 'Kayıt Ol';
+      toggleModeBtn.textContent = 'Zaten hesabın var mı? Giriş yap';
+      confirmInput.style.display = 'block';
+    }
+  }
+
+  toggleModeBtn.onclick = () => setMode(mode === 'login' ? 'register' : 'login');
+
+  function translateAuthError(e) {
+    const code = e.code || '';
+    if (code.includes('email-already-in-use')) return 'Bu oyuncu adı zaten alınmış.';
+    if (code.includes('weak-password')) return 'Şifre en az 6 karakter olmalı.';
+    if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) {
+      return 'Oyuncu adı veya şifre hatalı.';
+    }
+    if (code.includes('invalid-email')) return 'Oyuncu adı geçersiz karakterler içeriyor.';
+    return e.message || 'Bir hata oluştu.';
+  }
+
+  if (!configOk) {
+    configWarning.textContent = 'Firebase ayarları eksik. Dosyanın üstündeki "firebaseConfig" alanını doldurman gerekiyor.';
+    submitBtn.disabled = true;
+  } else {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    setMode('login');
+
+    submitBtn.onclick = async () => {
+      showError('');
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!username) return showError('Oyuncu adını gir.');
+      if (username.length < 3) return showError('Oyuncu adı en az 3 karakter olmalı.');
+      if (password.length < 6) return showError('Şifre en az 6 karakter olmalı.');
+
+      const email = usernameToEmail(username);
+
+      submitBtn.disabled = true;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = 'İşleniyor...';
+
+      try {
+        if (mode === 'register') {
+          const confirm = confirmInput.value;
+          if (password !== confirm) { showError('Şifreler eşleşmiyor.'); return; }
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(cred.user, { displayName: username });
+          showError('Kayıt başarılı, giriş yapılıyor...');
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (e) {
+        console.error(e);
+        showError(translateAuthError(e) + ' (kod: ' + (e.code || 'bilinmiyor') + ')');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    };
+
+    document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user) {
+        authScreen.style.display = 'none';
+        chatScreen.style.display = 'flex';
+        userLabel.textContent = user.displayName || 'Oyuncu';
+        usernameInput.value = '';
+        passwordInput.value = '';
+        confirmInput.value = '';
+        startListening();
+      } else {
+        chatScreen.style.display = 'none';
+        authScreen.style.display = 'flex';
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      }
+    });
+
+    function startListening() {
+      const messagesRef = collection(db, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'desc'), limit(MAX_MESSAGES));
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const list = [];
+        snapshot.forEach((doc) => list.push({ id: doc.id, ...doc.data() }));
+        list.reverse(); // en eski üstte, en yeni altta
+        renderMessages(list);
+      });
+    }
+
+    function renderMessages(list) {
+      messagesEl.innerHTML = '';
+      for (const m of list) {
+        const div = document.createElement('div');
+        div.className = 'msg' + (currentUser && m.uid === currentUser.uid ? ' own' : '');
+        const time = m.createdAt && m.createdAt.toDate
+          ? m.createdAt.toDate().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+          : '';
+        div.innerHTML = `
+          <div class="name">${escapeHtml(m.name)}</div>
+          <div class="content">${escapeHtml(m.content)}</div>
+          <div class="time">${escapeHtml(time)}</div>
+        `;
+        messagesEl.appendChild(div);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str ?? '';
+      return d.innerHTML;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('message-input');
+      const content = input.value.trim();
+      if (!content || !currentUser) return;
+      input.value = '';
+      try {
+        await addDoc(collection(db, 'messages'), {
+          uid: currentUser.uid,
+          name: currentUser.displayName || 'Oyuncu',
+          content: content.slice(0, 500),
+          createdAt: serverTimestamp()
+        });
+        await pruneOldMessages();
+      } catch (e) {
+        showError(e.message);
+      }
+    }
+
+    // Sadece son 20 mesajı tut; 21. mesaj geldiğinde en eskisini sil.
+    async function pruneOldMessages() {
+      const messagesRef = collection(db, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      const snapshot = await getDocs(q);
+      const extra = snapshot.size - MAX_MESSAGES;
+      if (extra > 0) {
+        const toDelete = snapshot.docs.slice(0, extra);
+        await Promise.all(toDelete.map((d) => deleteDoc(d.ref)));
+      }
+    }
+
+    document.getElementById('send-btn').onclick = sendMessage;
+    document.getElementById('message-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  }
+</script>
+</body>
+</html>
