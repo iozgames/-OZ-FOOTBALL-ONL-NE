@@ -263,29 +263,33 @@
 
   /* Kaleci ve top artık teleport gibi anlık transform yerine, çok-adımlı
      keyframe animasyonlarıyla hareket ediyor: kaleci gerçek bir "uçarak
-     kurtarış" hissi verecek şekilde zıplayıp dönüyor, top da düz bir
-     kayma yerine kavis çizip küçülerek (uzaklaşma hissi) ve dönerek
-     kaleye/kaleciye doğru ilerliyor. */
-  #pk-keeper, #pk-ball{ transform-box: fill-box; transform-origin:50% 50%; }
+     kurtarış" hissi verecek şekilde önce hafifçe hazırlanıp (anticipation)
+     sonra zıplayıp dönüyor, top da düz bir kayma yerine kavis çizip
+     küçülerek (uzaklaşma hissi) ve dönerek kaleye/kaleciye doğru ilerliyor. */
+  #pk-keeper, #pk-ball, #pk-ball-trail1, #pk-ball-trail2{ transform-box: fill-box; transform-origin:50% 50%; }
+  #pk-ball-trail1, #pk-ball-trail2{ opacity:0; pointer-events:none; }
 
   @keyframes kDiveLeft{
     0%{ transform:translate(0,0) rotate(0deg); }
-    22%{ transform:translate(-5px,-9px) rotate(-8deg); }
+    10%{ transform:translate(2px,-3px) rotate(3deg); }
+    26%{ transform:translate(-6px,-11px) rotate(-10deg); }
     100%{ transform:translate(-58px,9px) rotate(-80deg); }
   }
   @keyframes kDiveRight{
     0%{ transform:translate(0,0) rotate(0deg); }
-    22%{ transform:translate(5px,-9px) rotate(8deg); }
+    10%{ transform:translate(-2px,-3px) rotate(-3deg); }
+    26%{ transform:translate(6px,-11px) rotate(10deg); }
     100%{ transform:translate(58px,9px) rotate(80deg); }
   }
   @keyframes kDiveCenter{
     0%{ transform:translate(0,0) scale(1); }
-    35%{ transform:translate(0,-7px) scale(1.07); }
+    18%{ transform:translate(0,2px) scale(0.94,1.06); }
+    40%{ transform:translate(0,-8px) scale(1.09); }
     100%{ transform:translate(0,3px) scale(1); }
   }
-  #pk-keeper.anim-left{ animation:kDiveLeft .5s cubic-bezier(.30,1.35,.4,1) forwards; }
-  #pk-keeper.anim-right{ animation:kDiveRight .5s cubic-bezier(.30,1.35,.4,1) forwards; }
-  #pk-keeper.anim-center{ animation:kDiveCenter .4s ease-out forwards; }
+  #pk-keeper.anim-left{ animation:kDiveLeft .52s cubic-bezier(.30,1.35,.4,1) forwards; }
+  #pk-keeper.anim-right{ animation:kDiveRight .52s cubic-bezier(.30,1.35,.4,1) forwards; }
+  #pk-keeper.anim-center{ animation:kDiveCenter .42s ease-out forwards; }
 
   @keyframes bLeftGoal{
     0%{ transform:translate(0,0) scale(1) rotate(0deg); }
@@ -320,19 +324,83 @@
     80%{ transform:translate(53px,-53px) scale(.66) rotate(310deg); }
     100%{ transform:translate(46px,-38px) scale(.6) rotate(350deg); }
   }
-  #pk-ball.anim-left-goal{ animation:bLeftGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
-  #pk-ball.anim-center-goal{ animation:bCenterGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
-  #pk-ball.anim-right-goal{ animation:bRightGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
-  #pk-ball.anim-left-miss{ animation:bLeftMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
-  #pk-ball.anim-center-miss{ animation:bCenterMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
-  #pk-ball.anim-right-miss{ animation:bRightMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-left-goal{ animation:bLeftGoal .5s cubic-bezier(.22,.7,.3,1) forwards; }
+  #pk-ball.anim-center-goal{ animation:bCenterGoal .5s cubic-bezier(.22,.7,.3,1) forwards; }
+  #pk-ball.anim-right-goal{ animation:bRightGoal .5s cubic-bezier(.22,.7,.3,1) forwards; }
+  #pk-ball.anim-left-miss{ animation:bLeftMiss .46s cubic-bezier(.22,.7,.3,1) forwards; }
+  #pk-ball.anim-center-miss{ animation:bCenterMiss .46s cubic-bezier(.22,.7,.3,1) forwards; }
+  #pk-ball.anim-right-miss{ animation:bRightMiss .46s cubic-bezier(.22,.7,.3,1) forwards; }
+
+  /* Topun arkasında kalan iki "hayalet" kopya, aynı yörüngeyi hafif gecikmeyle
+     ve azalan opaklıkla izleyerek hız/momentum hissi (comet trail) verir. */
+  #pk-ball-trail1.anim-left-goal{ animation:bLeftGoal .5s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .5s linear .045s forwards; }
+  #pk-ball-trail1.anim-center-goal{ animation:bCenterGoal .5s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .5s linear .045s forwards; }
+  #pk-ball-trail1.anim-right-goal{ animation:bRightGoal .5s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .5s linear .045s forwards; }
+  #pk-ball-trail1.anim-left-miss{ animation:bLeftMiss .46s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .46s linear .045s forwards; }
+  #pk-ball-trail1.anim-center-miss{ animation:bCenterMiss .46s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .46s linear .045s forwards; }
+  #pk-ball-trail1.anim-right-miss{ animation:bRightMiss .46s cubic-bezier(.22,.7,.3,1) .045s forwards, trailFade .46s linear .045s forwards; }
+  #pk-ball-trail2.anim-left-goal{ animation:bLeftGoal .5s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .5s linear .09s forwards; }
+  #pk-ball-trail2.anim-center-goal{ animation:bCenterGoal .5s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .5s linear .09s forwards; }
+  #pk-ball-trail2.anim-right-goal{ animation:bRightGoal .5s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .5s linear .09s forwards; }
+  #pk-ball-trail2.anim-left-miss{ animation:bLeftMiss .46s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .46s linear .09s forwards; }
+  #pk-ball-trail2.anim-center-miss{ animation:bCenterMiss .46s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .46s linear .09s forwards; }
+  #pk-ball-trail2.anim-right-miss{ animation:bRightMiss .46s cubic-bezier(.22,.7,.3,1) .09s forwards, trailFade .46s linear .09s forwards; }
+  @keyframes trailFade{
+    0%{ opacity:0.35; }
+    100%{ opacity:0; }
+  }
+
+  /* Şut anındaki toz püskürtme + temas anındaki beyaz/altın patlama */
+  @keyframes dustPuff{
+    0%{ opacity:0.55; transform:scale(0.3); }
+    100%{ opacity:0; transform:scale(2.6); }
+  }
+  #pk-dust{
+    position:absolute; left:50%; top:74%; width:26px; height:10px; margin:-5px 0 0 -13px;
+    border-radius:50%; background:radial-gradient(ellipse, rgba(255,255,255,0.8), transparent 70%);
+    opacity:0; pointer-events:none;
+  }
+  #pk-dust.show{ animation:dustPuff .45s ease-out forwards; }
+
+  @keyframes impactBurst{
+    0%{ opacity:0.9; transform:scale(0.2); }
+    60%{ opacity:0.55; }
+    100%{ opacity:0; transform:scale(2.2); }
+  }
+  #pk-impact{
+    position:absolute; left:50%; top:38%; width:70px; height:70px; margin:-35px 0 0 -35px;
+    border-radius:50%; pointer-events:none; opacity:0;
+  }
+  #pk-impact.goal{ background:radial-gradient(circle, rgba(250,204,21,0.85), rgba(250,204,21,0) 70%); }
+  #pk-impact.miss{ background:radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%); }
+  #pk-impact.show{ animation:impactBurst .5s ease-out forwards; }
+
+  /* "Sarsıntı" hissi: golde daha geniş/uzun, kurtarışta daha sert/kısa bir çalkalanma */
+  @keyframes shakeGoal{
+    0%,100%{ transform:translate(0,0); }
+    15%{ transform:translate(-6px,3px) rotate(-0.6deg); }
+    30%{ transform:translate(6px,-3px) rotate(0.6deg); }
+    45%{ transform:translate(-5px,2px); }
+    60%{ transform:translate(4px,-2px); }
+    75%{ transform:translate(-2px,1px); }
+  }
+  @keyframes shakeSave{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    20%{ transform:translate(-9px,0) scale(1.01); }
+    40%{ transform:translate(8px,0) scale(1.01); }
+    60%{ transform:translate(-5px,0); }
+    80%{ transform:translate(3px,0); }
+  }
+  #pk-stage.shake-goal{ animation:shakeGoal .42s cubic-bezier(.36,.07,.19,.97) both; }
+  #pk-stage.shake-save{ animation:shakeSave .38s cubic-bezier(.36,.07,.19,.97) both; }
 
   #pk-result-flash{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-family:'Anton',sans-serif; font-size:30px; letter-spacing:1px;
-    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
-    transform:scale(0.85);
+    font-family:'Anton',sans-serif; font-size:32px; letter-spacing:1px;
+    opacity:0; pointer-events:none; transition:opacity .18s, transform .18s;
+    transform:scale(0.7);
     text-shadow:0 2px 14px rgba(0,0,0,0.7);
+    z-index:5;
   }
   #pk-result-flash.show{ opacity:1; transform:scale(1); }
   #pk-result-flash.goal{ color:var(--gold2); }
@@ -354,7 +422,8 @@
     border:2px solid var(--border); background:var(--panel2);
   }
   #pk-turn-timer.show{ display:flex; }
-  #pk-turn-timer.low{ color:#fff; border-color:var(--red); background:rgba(239,68,68,0.35); }
+  #pk-turn-timer.low{ color:#fff; border-color:var(--red); background:rgba(239,68,68,0.35); animation:timerPulse .6s ease-in-out infinite; }
+  @keyframes timerPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.12); } }
   #pk-zones{ display:flex; gap:8px; width:100%; }
   .pk-zone-btn{
     flex:1; padding:14px 4px; border-radius:12px; border:1px solid var(--border);
@@ -367,7 +436,20 @@
   .pk-zone-btn.keeper-mode{ border-color:rgba(239,68,68,0.55); background:rgba(239,68,68,0.08); }
   .pk-zone-btn:disabled{ opacity:0.3; }
 
-  #shot-pips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:26px; }
+  #shot-pips-wrap{ display:flex; flex-direction:column; gap:6px; width:100%; }
+  .pip-row{ display:flex; align-items:center; gap:8px; }
+  .pip-row-label{ font-size:11px; color:var(--muted); font-weight:700; width:38px; flex-shrink:0; text-align:right; }
+  .shot-pips{ display:flex; flex-wrap:wrap; gap:6px; min-height:22px; }
+
+  .pk-afk-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; padding:8px 12px; border-radius:10px;
+    background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
+    font-size:12px; color:#ffb4b4;
+  }
+  .pk-afk-banner.hidden{ display:none; }
+  .btn-sm{ padding:6px 10px; font-size:11px; white-space:nowrap; }
+  .btn-red{ background:linear-gradient(180deg,#ef4444,#b91c1c); color:#fff; border:none; }
   .pip{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1.5px solid var(--border); flex-shrink:0; }
   .pip .icon{ width:13px; height:13px; }
   .pip.goal{ background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green); }
@@ -629,12 +711,16 @@
           <circle cx="160" cy="34" r="9" fill="#f0c9a0"/>
           <path d="M151 31 Q160 22 169 31 Q169 25 160 24 Q151 25 151 31Z" fill="#1c140a"/>
         </g>
+        <circle id="pk-ball-trail2" cx="160" cy="110" r="7" fill="#eef2ff"/>
+        <circle id="pk-ball-trail1" cx="160" cy="110" r="7.2" fill="#eef2ff"/>
         <g id="pk-ball" class="dir-center">
           <circle cx="160" cy="110" r="7.5" fill="#eef2ff" stroke="#0a0f1c" stroke-width="1"/>
           <path d="M160 104.7 156.2 107.6 157.6 112.2 162.4 112.2 163.8 107.6Z" fill="#0a0f1c"/>
           <path d="M160 104.7V102.2M156.2 107.6l-2.2-1.5M163.8 107.6l2.2-1.5M157.6 112.2l-0.9 2.3M162.4 112.2l0.9 2.3" stroke="#0a0f1c" stroke-width="0.8" stroke-linecap="round"/>
         </g>
       </svg>
+      <div id="pk-dust"></div>
+      <div id="pk-impact"></div>
       <div id="pk-result-flash"></div>
     </div>
 
@@ -646,7 +732,15 @@
       <button class="pk-zone-btn" data-dir="center"><span><svg class="icon"><use href="#icon-chevron"/></svg></span>ORTA</button>
       <button class="pk-zone-btn" data-dir="right"><span><svg class="icon" style="transform:rotate(90deg);"><use href="#icon-chevron"/></svg></span>SAĞ</button>
     </div>
-    <div id="shot-pips"></div>
+    <div id="pk-afk-banner" class="pk-afk-banner hidden">
+      <span id="pk-afk-text">Rakip uzun süredir hareketsiz görünüyor.</span>
+      <button id="pk-afk-claim-btn" class="btn btn-red btn-sm">Maçı Bitir (Sen Kazan)</button>
+    </div>
+
+    <div id="shot-pips-wrap">
+      <div class="pip-row"><span class="pip-row-label">Sen</span><div id="shot-pips-me" class="shot-pips"></div></div>
+      <div class="pip-row"><span class="pip-row-label">Rakip</span><div id="shot-pips-opp" class="shot-pips"></div></div>
+    </div>
   </div>
 
   <div id="result-screen" class="screen hidden">
@@ -656,7 +750,8 @@
       <div id="result-trophy">+0 <svg class="icon"><use href="#icon-trophy"/></svg></div>
       <div id="result-money">+0 <svg class="icon"><use href="#icon-coin"/></svg></div>
     </div>
-    <button id="result-home-btn" class="btn btn-gold btn-block">Ana Sayfaya Dön</button>
+    <button id="result-rematch-btn" class="btn btn-gold btn-block">Tekrar Oyna</button>
+    <button id="result-home-btn" class="btn btn-ghost btn-block">Ana Sayfaya Dön</button>
   </div>
 
   <div id="leaderboard-screen" class="screen hidden">
@@ -747,6 +842,7 @@
   const SEARCH_SECONDS = 10;
   const SHOTS_PER_PLAYER = 3;
   const TURN_SECONDS = 10; // her seçim (şut/kaleci) için verilen süre
+  const AFK_MS = 25000; // rakipten bu kadar süre hiç hareket gelmezse "bağlantısı kopmuş olabilir" uyarısı çıkar
 
   const BOT_FIRST = ["Kaan","Mert","Efe","Deniz","Arda","Berk","Ege","Emre","Poyraz","Kerem","Alex","Leo","Marco","Diego","Lucas","Noah","Mateo","Ivan","Ryan","Owen","Bruno","Theo"];
   const BOT_LAST = ["Yıldız","Demir","Aydın","Kara","Şahin","Öztürk","Aksoy","Bulut","Rossi","Silva","Garcia","Muller","Novak","Costa","Baker","Fischer","Lopez","Moreau","Hansen"];
@@ -770,6 +866,7 @@
   let activeMatchIsBot = false;
   let trophiesApplied = false;
   let lastArmedTurnKey = null; // aynı tur/pendingShot durumu için butonları tekrar tekrar aktif etmeyi önler
+  let afkWatchdogTimeout = null; // rakipten uzun süre hareket gelmeyince banner göstermek için
 
   // ---------- DOM ----------
   const screens = ['auth-screen','username-screen','home-screen','searching-screen','match-screen','result-screen','leaderboard-screen'];
@@ -1155,27 +1252,60 @@
     function resetPkVisual(){
       const keeper = document.getElementById('pk-keeper');
       const ball = document.getElementById('pk-ball');
+      const trail1 = document.getElementById('pk-ball-trail1');
+      const trail2 = document.getElementById('pk-ball-trail2');
       if (keeper) keeper.setAttribute('class', 'dir-center');
       if (ball) ball.setAttribute('class', 'dir-center');
+      if (trail1) trail1.setAttribute('class', 'dir-center');
+      if (trail2) trail2.setAttribute('class', 'dir-center');
       const flash = document.getElementById('pk-result-flash');
       if (flash){ flash.classList.remove('show','goal','miss'); flash.textContent = ''; }
+      const stage = document.getElementById('pk-stage');
+      if (stage) stage.classList.remove('shake-goal','shake-save');
+      const dust = document.getElementById('pk-dust');
+      if (dust) dust.classList.remove('show');
+      const impact = document.getElementById('pk-impact');
+      if (impact) impact.classList.remove('show','goal','miss');
+    }
+
+    // Cihaz destekliyorsa (ve kullanıcı sessize almadıysa) kısa bir titreşimle
+    // golü/kurtarışı hissettirir. Desteklenmiyorsa sessizce yok sayılır.
+    function vibrate(pattern){
+      try{ if (navigator.vibrate) navigator.vibrate(pattern); } catch(e){ /* no-op */ }
     }
 
     function playPkAnimation(dir, keeperDir, result, onDone){
       pkAnimBusy = true;
+      const stage = document.getElementById('pk-stage');
       const keeper = document.getElementById('pk-keeper');
       const ball = document.getElementById('pk-ball');
+      const trail1 = document.getElementById('pk-ball-trail1');
+      const trail2 = document.getElementById('pk-ball-trail2');
       const flash = document.getElementById('pk-result-flash');
+      const dust = document.getElementById('pk-dust');
+      const impact = document.getElementById('pk-impact');
+
       // Önce nötr hale getirip bir reflow zorluyoruz ki aynı yöne art arda
       // atılan şutlarda CSS animasyonu her seferinde baştan başlasın
       // (aksi halde tarayıcı "zaten bu class'tayım" deyip animasyonu
       // tekrar oynatmayabilir).
-      keeper.setAttribute('class', 'dir-center');
-      ball.setAttribute('class', 'dir-center');
+      resetPkVisual();
       void keeper.offsetWidth; void ball.offsetWidth;
+
+      // Şut anı: toz püskürtme, kaleci hazırlanmaya başlar, top ve iki
+      // "hayalet" izi aynı yörüngeyi hafif gecikmeyle takip eder (hız hissi).
+      dust.classList.add('show');
       keeper.classList.add('anim-' + keeperDir);
-      ball.classList.add('anim-' + dir + '-' + result);
+      const animClass = 'anim-' + dir + '-' + result;
+      ball.classList.add(animClass);
+      trail1.classList.add(animClass);
+      trail2.classList.add(animClass);
+
       setTimeout(() => {
+        // Temas anı: patlama + ekran sarsıntısı + titreşim, ardından metin.
+        stage.classList.add(result === 'goal' ? 'shake-goal' : 'shake-save');
+        impact.classList.add('show', result === 'goal' ? 'goal' : 'miss');
+        vibrate(result === 'goal' ? [35, 25, 70] : [15, 20, 15, 20, 55]);
         flash.textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
         flash.classList.add('show', result);
         setTimeout(() => {
@@ -1183,7 +1313,7 @@
           pkAnimBusy = false;
           if (onDone) onDone();
         }, 950);
-      }, 550);
+      }, 500);
     }
 
     // Rakip bulununca kısa bir "VS" giriş animasyonu oynatır: isim kartları
@@ -1202,14 +1332,16 @@
     }
 
     function renderPips(shots, myUid){
-      const box = document.getElementById('shot-pips');
-      box.innerHTML = '';
+      const boxMe = document.getElementById('shot-pips-me');
+      const boxOpp = document.getElementById('shot-pips-opp');
+      boxMe.innerHTML = '';
+      boxOpp.innerHTML = '';
       shots.forEach((s) => {
         const pip = document.createElement('div');
         pip.className = 'pip ' + s.result;
         pip.innerHTML = '<svg class="icon"><use href="#icon-' + (s.result === 'goal' ? 'ball' : 'close') + '"/></svg>';
-        pip.title = (s.uid === myUid ? 'Sen' : 'Rakip') + ' — ' + (s.result === 'goal' ? 'GOL' : 'KURTARDI');
-        box.appendChild(pip);
+        pip.title = (s.result === 'goal' ? 'GOL' : 'KURTARDI');
+        (s.uid === myUid ? boxMe : boxOpp).appendChild(pip);
       });
     }
 
@@ -1305,7 +1437,8 @@
             pendingShot: null,
             status: 'playing',
             winner: null,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            lastActionAt: serverTimestamp()
           });
           tx.update(candRef, { matchId: matchRef.id });
           tx.update(doc(db,'queue', currentUser.uid), { matchId: matchRef.id });
@@ -1355,11 +1488,13 @@
       lastMatchData = null;
       lastArmedTurnKey = null;
       clearTurnTimer();
+      clearAfkWatchdog();
       pkAction = null;
       resetPkVisual();
       showScreen('match-screen');
       playVsIntro();
-      document.getElementById('shot-pips').innerHTML = '';
+      document.getElementById('shot-pips-me').innerHTML = '';
+      document.getElementById('shot-pips-opp').innerHTML = '';
       document.getElementById('pk-status').textContent = 'Maç yükleniyor...';
       setPkRole('hidden');
       setPkZonesMode('hidden');
@@ -1434,23 +1569,34 @@
           setPkRole('wait');
           setPkZonesMode('hidden');
           statusEl.textContent = 'Şutunu attın. Rakip kalecinin hangi köşeye dalacağını bekliyoruz...';
+          armAfkWatchdog(m);
         } else if (turnKey !== lastArmedTurnKey){
           // Keeper never sees the shooter's chosen corner — only that a shot is coming.
           lastArmedTurnKey = turnKey;
-          pkAction = (dir) => submitKeeperDirection(activeMatchId, dir);
+          // matchId'yi ŞİMDİ (butonlar aktif edilirken) bir sabite kopyalıyoruz.
+          // Eskiden ok fonksiyonu içinde doğrudan activeMatchId okunuyordu; bu
+          // değişken paylaşımlı olduğu için, tıklama anına kadar herhangi bir
+          // sebeple değişirse (örn. ekran geçişi) yanlış/boş bir matchId ile
+          // Firestore'a "Maç bulunamadı" hatası veren bir yazma denemesi
+          // gönderilebiliyordu. Değeri burada dondurmak bu riski ortadan kaldırır.
+          const armedMatchId = activeMatchId;
+          pkAction = (dir) => submitKeeperDirection(armedMatchId, dir);
           setPkRole('keep');
           setPkZonesMode('keep');
           statusEl.textContent = 'Rakip şutunu attı! Şimdi kalecisin — topun gideceğini düşündüğün köşeyi seç ve o yöne dal.';
           startTurnTimer();
+          clearAfkWatchdog(); // sıra bende, rakibin AFK olup olmadığı artık önemsiz
         }
       } else if (iAmShooter){
         if (turnKey !== lastArmedTurnKey){
           lastArmedTurnKey = turnKey;
-          pkAction = (dir) => submitShotDirection(activeMatchId, dir);
+          const armedMatchId = activeMatchId;
+          pkAction = (dir) => submitShotDirection(armedMatchId, dir);
           setPkRole('shoot');
           setPkZonesMode('shoot');
           statusEl.textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
           startTurnTimer();
+          clearAfkWatchdog();
         }
       } else {
         clearTurnTimer();
@@ -1458,10 +1604,35 @@
         setPkRole('wait');
         setPkZonesMode('hidden');
         statusEl.textContent = (m.names[turnUid] || 'Rakip') + ' şutunu hazırlıyor. Sıra ona geldi, bekle — az sonra kalecilik sıran gelecek.';
+        armAfkWatchdog(m);
       }
     }
 
-    async function submitShotDirection(matchId, dir){
+    // Rakip uzun süre (AFK_MS) hiç hareket etmezse "bağlantısı kopmuş olabilir"
+    // uyarısını gösterir. m.lastActionAt varsa ondan kalan süreyi hesaplar,
+    // yoksa (eski/yeni açılan maç) şu andan itibaren tam süreyi bekler.
+    function armAfkWatchdog(m){
+      clearAfkWatchdog();
+      let remaining = AFK_MS;
+      if (m && m.lastActionAt && typeof m.lastActionAt.toMillis === 'function'){
+        remaining = Math.max(AFK_MS - (Date.now() - m.lastActionAt.toMillis()), 0);
+      }
+      afkWatchdogTimeout = setTimeout(() => {
+        const banner = document.getElementById('pk-afk-banner');
+        if (banner) banner.classList.remove('hidden');
+      }, remaining);
+    }
+
+    function clearAfkWatchdog(){
+      if (afkWatchdogTimeout){ clearTimeout(afkWatchdogTimeout); afkWatchdogTimeout = null; }
+      const banner = document.getElementById('pk-afk-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    // Rakip gerçekten uzun süredir sessizse, kalan tarafın maçı kendi lehine
+    // bitirmesine izin verir. Transaction içinde lastActionAt'in HÂLÂ eski
+    // olduğunu doğrular; rakip tam bu sırada geri dönmüşse forfeit iptal olur.
+    async function claimForfeitWin(matchId){
       const myUid = currentUser.uid;
       try{
         await runTransaction(db, async (tx) => {
@@ -1469,12 +1640,79 @@
           const snap = await tx.get(ref);
           if (!snap.exists()) throw new Error('Maç bulunamadı.');
           const m = snap.data();
-          if (m.status !== 'playing' || m.pendingShot) throw new Error('Bu şut artık geçerli değil, ekran güncelleniyor.');
-          const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
-          if (turnUid !== myUid) throw new Error('Sıra sende değil, ekran güncelleniyor.');
-          tx.update(ref, { pendingShot: { shooterUid: myUid, dir } });
+          if (m.status !== 'playing') throw new Error('Maç zaten bitmiş, ekran güncelleniyor.');
+          const stale = !m.lastActionAt || typeof m.lastActionAt.toMillis !== 'function'
+            || (Date.now() - m.lastActionAt.toMillis()) >= AFK_MS - 1500;
+          if (!stale) throw new Error('Rakip az önce hareket etti, bekleyelim.');
+          tx.update(ref, { status:'finished', winner: myUid, pendingShot: null });
         });
       } catch(e){
+        showToast(e.message);
+      }
+    }
+
+    document.getElementById('pk-afk-claim-btn').onclick = () => {
+      if (activeMatchId) claimForfeitWin(activeMatchId);
+    };
+
+    // Küçük bir yardımcı: Promise tabanlı bekleme (retry'lar arasında kullanılır).
+    function wait(ms){ return new Promise((res) => setTimeout(res, ms)); }
+
+    // "Maç bulunamadı" hatasından sonra oyuncuyu ölü bir ekranda bırakmamak için:
+    // önce kısa bir gecikmeyle SESSİZCE bir kez daha dener (gerçekten geçici bir
+    // gecikme/yeniden bağlanma anıysa bu tek retry genelde yeter). Hâlâ
+    // bulunamıyorsa, maçın gerçekten var olup olmadığını (transaction dışında,
+    // doğrudan) bir kez daha kontrol eder; yoksa kullanıcıyı temiz biçimde ana
+    // sayfaya döndürüp anlaşılır bir mesaj gösterir — sonsuza dek kilitli
+    // "Kaydedilemedi" ekranında bırakmaz.
+    async function recoverFromMissingMatch(matchId, myUid, actionLabel){
+      try{
+        const freshSnap = matchId ? await getDoc(doc(db,'matches', matchId)) : null;
+        if (freshSnap && freshSnap.exists()){
+          // Aslında doküman varmış (geçici bir okuma gecikmesiydi) — ekranı
+          // en güncel veriyle onarıp oyuncunun tekrar denemesine izin ver.
+          lastArmedTurnKey = null;
+          renderMatch(freshSnap.data());
+          return;
+        }
+      } catch(e){ /* aşağıdaki genel kurtarmaya düş */ }
+
+      showToast(actionLabel + ' gönderilemedi: bu maç artık bulunamıyor. Ana sayfaya dönülüyor.');
+      clearTurnTimer();
+      pkAction = null;
+      if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      activeMatchId = null;
+      lastMatchData = null;
+      setTimeout(() => showScreen('home-screen'), 1200);
+    }
+
+    async function submitShotDirection(matchId, dir){
+      const myUid = currentUser.uid;
+      if (!matchId){
+        showToast('Şut gönderilemedi: maç kimliği bulunamadı.');
+        return recoverFromMissingMatch(matchId, myUid, 'Şut');
+      }
+      const attempt = async () => runTransaction(db, async (tx) => {
+        const ref = doc(db,'matches', matchId);
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw new Error('Maç bulunamadı.');
+        const m = snap.data();
+        if (m.status !== 'playing' || m.pendingShot) throw new Error('Bu şut artık geçerli değil, ekran güncelleniyor.');
+        const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
+        if (turnUid !== myUid) throw new Error('Sıra sende değil, ekran güncelleniyor.');
+        tx.update(ref, { pendingShot: { shooterUid: myUid, dir }, lastActionAt: serverTimestamp() });
+      });
+      try{
+        await attempt();
+      } catch(e){
+        if (e.message === 'Maç bulunamadı.'){
+          // Geçici bir gecikme olabilir: kısa bir bekleyip sessizce bir kez daha dene.
+          await wait(600);
+          try{ await attempt(); return; } catch(e2){
+            if (e2.message === 'Maç bulunamadı.'){ return recoverFromMissingMatch(matchId, myUid, 'Şut'); }
+            e = e2;
+          }
+        }
         // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
         // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
         showToast('Şut gönderilemedi: ' + e.message);
@@ -1485,29 +1723,54 @@
 
     async function submitKeeperDirection(matchId, keeperDir){
       const myUid = currentUser.uid;
+      if (!matchId){
+        showToast('Kaydedilemedi: maç kimliği bulunamadı.');
+        return recoverFromMissingMatch(matchId, myUid, 'Kaleci dalışı');
+      }
+      const attempt = async () => runTransaction(db, async (tx) => {
+        const ref = doc(db,'matches', matchId);
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw new Error('Maç bulunamadı.');
+        const m = snap.data();
+        if (m.status !== 'playing' || !m.pendingShot) throw new Error('Kurtaracak bir şut yok, ekran güncelleniyor.');
+        if (m.pendingShot.shooterUid === myUid) throw new Error('Kendi şutunu kurtaramazsın, ekran güncelleniyor.');
+        const dir = m.pendingShot.dir;
+        const result = (dir === keeperDir) ? 'miss' : 'goal';
+        const newShots = [...m.shots, { uid: m.pendingShot.shooterUid, dir, keeperDir, result }];
+        const newTurnIndex = m.turnIndex + 1;
+        const totalShots = SHOTS_PER_PLAYER * 2;
+
+        const s1 = newShots.filter((s)=> s.uid===m.order[0] && s.result==='goal').length;
+        const s2 = newShots.filter((s)=> s.uid===m.order[1] && s.result==='goal').length;
+        const taken1 = newShots.filter((s)=> s.uid===m.order[0]).length;
+        const taken2 = newShots.filter((s)=> s.uid===m.order[1]).length;
+        const remaining1 = SHOTS_PER_PLAYER - taken1;
+        const remaining2 = SHOTS_PER_PLAYER - taken2;
+
+        let status = 'playing', winner = null;
+        // Skor artık kimsenin yakalayamayacağı şekilde kesinleşmişse (gerçek
+        // penaltı atışlarındaki gibi), kalan anlamsız şutları oynatmadan
+        // maçı hemen bitiriyoruz — "3 gol atmışız ama hâlâ devam ediyor" sorunu.
+        if (s1 > s2 + remaining2){
+          status = 'finished'; winner = m.order[0];
+        } else if (s2 > s1 + remaining1){
+          status = 'finished'; winner = m.order[1];
+        } else if (newTurnIndex >= totalShots){
+          status = 'finished';
+          winner = s1 === s2 ? 'draw' : (s1 > s2 ? m.order[0] : m.order[1]);
+        }
+        tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner, pendingShot: null, lastActionAt: serverTimestamp() });
+      });
       try{
-        await runTransaction(db, async (tx) => {
-          const ref = doc(db,'matches', matchId);
-          const snap = await tx.get(ref);
-          if (!snap.exists()) throw new Error('Maç bulunamadı.');
-          const m = snap.data();
-          if (m.status !== 'playing' || !m.pendingShot) throw new Error('Kurtaracak bir şut yok, ekran güncelleniyor.');
-          if (m.pendingShot.shooterUid === myUid) throw new Error('Kendi şutunu kurtaramazsın, ekran güncelleniyor.');
-          const dir = m.pendingShot.dir;
-          const result = (dir === keeperDir) ? 'miss' : 'goal';
-          const newShots = [...m.shots, { uid: m.pendingShot.shooterUid, dir, keeperDir, result }];
-          const newTurnIndex = m.turnIndex + 1;
-          const totalShots = SHOTS_PER_PLAYER * 2;
-          let status = 'playing', winner = null;
-          if (newTurnIndex >= totalShots){
-            status = 'finished';
-            const s1 = newShots.filter((s)=> s.uid===m.order[0] && s.result==='goal').length;
-            const s2 = newShots.filter((s)=> s.uid===m.order[1] && s.result==='goal').length;
-            winner = s1 === s2 ? 'draw' : (s1 > s2 ? m.order[0] : m.order[1]);
-          }
-          tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner, pendingShot: null });
-        });
+        await attempt();
       } catch(e){
+        if (e.message === 'Maç bulunamadı.'){
+          await wait(600);
+          try{ await attempt(); return; } catch(e2){
+            if (e2.message === 'Maç bulunamadı.'){ return recoverFromMissingMatch(matchId, myUid, 'Kaleci dalışı'); }
+            e = e2;
+          }
+        }
         // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
         // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
         showToast('Kaydedilemedi: ' + e.message);
@@ -1523,6 +1786,7 @@
     async function finishRealMatch(m, myUid, oppUid){
       if (trophiesApplied) return;
       trophiesApplied = true;
+      clearAfkWatchdog();
       const kind = m.winner === 'draw' ? 'draw' : (m.winner === myUid ? 'win' : 'lose');
       const trophyDelta = trophyDeltaFor(kind);
       const moneyDelta = moneyDeltaFor(kind);
@@ -1555,10 +1819,12 @@
       document.getElementById('p2-name').textContent = botName;
       document.getElementById('p1-score').textContent = '0';
       document.getElementById('p2-score').textContent = '0';
-      document.getElementById('shot-pips').innerHTML = '';
+      document.getElementById('shot-pips-me').innerHTML = '';
+      document.getElementById('shot-pips-opp').innerHTML = '';
       resetPkVisual();
       playVsIntro();
       clearTurnTimer();
+      clearAfkWatchdog();
       pkAction = null;
       setPkRole('hidden');
       setPkZonesMode('hidden');
@@ -1568,6 +1834,20 @@
       const shots = [];
       let idx = 0;
       const total = SHOTS_PER_PLAYER * 2;
+
+      function checkEarlyDecision(){
+        const myScore = shots.filter((s)=>s.who==='you' && s.result==='goal').length;
+        const botScore = shots.filter((s)=>s.who==='bot' && s.result==='goal').length;
+        const takenYou = shots.filter((s)=>s.who==='you').length;
+        const takenBot = shots.filter((s)=>s.who==='bot').length;
+        const remainingYou = SHOTS_PER_PLAYER - takenYou;
+        const remainingBot = SHOTS_PER_PLAYER - takenBot;
+        // Skor artık kimsenin yakalayamayacağı şekilde kesinleşmişse, kalan
+        // anlamsız şutları oynatmadan maçı hemen bitir.
+        if (myScore > botScore + remainingBot){ finishBotMatch('you'); return true; }
+        if (botScore > myScore + remainingYou){ finishBotMatch('bot'); return true; }
+        return false;
+      }
 
       function step(){
         if (idx >= total){
@@ -1594,6 +1874,7 @@
               playPkAnimation(dir, keeperDir, result, () => {
                 shots.push({ who:'you', result });
                 renderBotShots(shots, botName);
+                if (checkEarlyDecision()) return;
                 idx++; step();
               });
             }, 350);
@@ -1618,6 +1899,7 @@
               playPkAnimation(dir, keeperDir, result, () => {
                 shots.push({ who:'bot', result });
                 renderBotShots(shots, botName);
+                if (checkEarlyDecision()) return;
                 idx++; step();
               });
             };
@@ -1684,8 +1966,17 @@
     document.getElementById('result-home-btn').onclick = () => {
       if (matchUnsub){ matchUnsub(); matchUnsub = null; }
       clearTurnTimer();
+      clearAfkWatchdog();
       activeMatchId = null;
       showScreen('home-screen');
+    };
+
+    document.getElementById('result-rematch-btn').onclick = () => {
+      if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      clearTurnTimer();
+      clearAfkWatchdog();
+      activeMatchId = null;
+      startMatchmaking();
     };
 
     document.getElementById('logout-btn').onclick = () => signOut(auth);
@@ -1694,6 +1985,7 @@
       if (chatUnsub){ chatUnsub(); chatUnsub = null; }
       if (matchUnsub){ matchUnsub(); matchUnsub = null; }
       clearTurnTimer();
+      clearAfkWatchdog();
       stopSearching(false);
     }
   }
