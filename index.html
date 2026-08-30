@@ -200,21 +200,60 @@
   .vs-side .pname{ font-weight:700; font-size:14px; }
   .vs-side .pscore{ font-size:26px; font-weight:800; color:var(--gold2); }
   .vs-mid{ font-size:12px; color:var(--muted); padding:0 8px; }
-  #shot-log{
-    width:100%; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
-    padding:6px 2px;
+
+  /* ---- Penalty stage: goal + keeper + ball, the signature visual ---- */
+  #pk-stage{
+    position:relative; width:100%; aspect-ratio:320/148; border-radius:16px; overflow:hidden;
+    background:
+      radial-gradient(ellipse 220px 90px at 50% 100%, rgba(0,0,0,0.35), transparent 70%),
+      linear-gradient(180deg, #0e3d24 0%, #135330 55%, #0b6135 100%);
+    border:1px solid var(--border);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.35);
   }
-  .shot-row{
-    display:flex; align-items:center; gap:10px; padding:9px 12px;
-    background:var(--panel); border:1px solid var(--border); border-radius:12px;
-    font-size:13px; text-align:left;
+  #pk-stage svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .pk-net-line{ stroke:rgba(238,242,255,0.30); stroke-width:1; }
+  .pk-post{ fill:none; stroke:#eef2ff; stroke-width:5; stroke-linecap:round; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.4)); }
+  .pk-spot{ fill:rgba(238,242,255,0.55); }
+  .pk-stripe{ fill:rgba(255,255,255,0.05); }
+
+  #pk-keeper, #pk-ball{
+    transform-box: fill-box; transform-origin:50% 50%;
+    transition: transform .5s cubic-bezier(.22,.85,.25,1);
   }
-  .shot-row .icon{ font-size:18px; }
-  .shot-row.goal{ border-color:rgba(34,197,94,0.5); }
-  .shot-row.miss{ border-color:rgba(239,68,68,0.5); }
-  #turn-status{ font-size:13px; color:var(--muted); min-height:18px; }
-  #shoot-btn{ width:100%; padding:16px; font-size:16px; }
-  #shoot-btn:disabled{ opacity:0.4; }
+  #pk-keeper.dir-left{ transform:translateX(-62px) rotate(-24deg); }
+  #pk-keeper.dir-right{ transform:translateX(62px) rotate(24deg); }
+  #pk-keeper.dir-center{ transform:translateX(0) translateY(-3px) rotate(0deg); }
+  #pk-ball.dir-left{ transform:translate(-70px,-38px) scale(0.8); }
+  #pk-ball.dir-center{ transform:translate(0,-50px) scale(0.8); }
+  #pk-ball.dir-right{ transform:translate(70px,-38px) scale(0.8); }
+
+  #pk-result-flash{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:30px; letter-spacing:1px;
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+    transform:scale(0.85);
+    text-shadow:0 2px 14px rgba(0,0,0,0.7);
+  }
+  #pk-result-flash.show{ opacity:1; transform:scale(1); }
+  #pk-result-flash.goal{ color:var(--gold2); }
+  #pk-result-flash.miss{ color:var(--red); }
+
+  #pk-status{ font-size:13px; color:var(--muted); text-align:center; min-height:18px; }
+  #pk-zones{ display:flex; gap:8px; width:100%; }
+  .pk-zone-btn{
+    flex:1; padding:14px 4px; border-radius:12px; border:1px solid var(--border);
+    background:var(--panel2); color:var(--text); font-weight:800; font-size:12px;
+    display:flex; flex-direction:column; align-items:center; gap:3px; letter-spacing:0.5px;
+  }
+  .pk-zone-btn span{ font-size:16px; }
+  .pk-zone-btn:active{ transform:scale(0.95); }
+  .pk-zone-btn.keeper-mode{ border-color:rgba(239,68,68,0.55); background:rgba(239,68,68,0.08); }
+  .pk-zone-btn:disabled{ opacity:0.3; }
+
+  #shot-pips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:26px; }
+  .pip{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; border:1.5px solid var(--border); flex-shrink:0; }
+  .pip.goal{ background:rgba(34,197,94,0.15); border-color:var(--green); }
+  .pip.miss{ background:rgba(239,68,68,0.15); border-color:var(--red); }
 
   /* ---- Result ---- */
   #result-screen h1{ font-size:26px; margin:0; }
@@ -329,9 +368,47 @@
         <div class="pscore" id="p2-score">0</div>
       </div>
     </div>
-    <div id="shot-log"></div>
-    <div id="turn-status">-</div>
-    <button id="shoot-btn" class="btn btn-gold">TAKE THE SHOT ⚽</button>
+
+    <div id="pk-stage">
+      <svg viewBox="0 0 320 148" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="pk-net-pat" width="12" height="12" patternUnits="userSpaceOnUse">
+            <path d="M0 0L12 12M12 0L0 12" class="pk-net-line"/>
+          </pattern>
+        </defs>
+        <rect class="pk-stripe" x="0" y="0" width="320" height="148"/>
+        <rect class="pk-stripe" x="40" y="0" width="40" height="148"/>
+        <rect class="pk-stripe" x="120" y="0" width="40" height="148"/>
+        <rect class="pk-stripe" x="200" y="0" width="40" height="148"/>
+        <rect class="pk-stripe" x="280" y="0" width="40" height="148"/>
+        <rect x="55" y="12" width="210" height="72" fill="url(#pk-net-pat)"/>
+        <path class="pk-post" d="M55 84 V12 H265 V84"/>
+        <line x1="26" y1="118" x2="294" y2="118" stroke="#eef2ff" stroke-width="3" opacity="0.75"/>
+        <path d="M100 118 Q160 108 220 118" fill="none" stroke="#eef2ff" stroke-width="2" opacity="0.6"/>
+        <circle class="pk-spot" cx="160" cy="110" r="3"/>
+        <g id="pk-keeper" class="dir-center">
+          <ellipse cx="160" cy="72" rx="15" ry="5" fill="rgba(0,0,0,0.28)"/>
+          <rect x="148" y="46" width="24" height="27" rx="7" fill="#181128"/>
+          <circle cx="160" cy="38" r="9" fill="#f0c9a0"/>
+          <rect x="129" y="47" width="17" height="8" rx="4" fill="#181128"/>
+          <rect x="174" y="47" width="17" height="8" rx="4" fill="#181128"/>
+          <circle cx="128" cy="51" r="5.5" fill="#eef2ff"/>
+          <circle cx="192" cy="51" r="5.5" fill="#eef2ff"/>
+          <rect x="150" y="72" width="8" height="17" rx="3" fill="#2a1d45"/>
+          <rect x="162" y="72" width="8" height="17" rx="3" fill="#2a1d45"/>
+        </g>
+        <circle id="pk-ball" class="dir-center" cx="160" cy="110" r="7.5" fill="#eef2ff" stroke="#0a0f1c" stroke-width="1"/>
+      </svg>
+      <div id="pk-result-flash"></div>
+    </div>
+
+    <div id="pk-status">-</div>
+    <div id="pk-zones">
+      <button class="pk-zone-btn" data-dir="left"><span>◀</span>LEFT</button>
+      <button class="pk-zone-btn" data-dir="center"><span>▲</span>CENTER</button>
+      <button class="pk-zone-btn" data-dir="right"><span>▶</span>RIGHT</button>
+    </div>
+    <div id="shot-pips"></div>
   </div>
 
   <div id="result-screen" class="screen hidden">
@@ -425,7 +502,6 @@
 
   const MAX_CHAT_MESSAGES = 20;
   const SEARCH_SECONDS = 10;
-  const GOAL_CHANCE = 0.68;
   const SHOTS_PER_PLAYER = 2;
 
   const BOT_FIRST = ["Kaan","Mert","Efe","Deniz","Arda","Berk","Ege","Emre","Poyraz","Kerem","Alex","Leo","Marco","Diego","Lucas","Noah","Mateo","Ivan","Ryan","Owen","Bruno","Theo"];
@@ -465,7 +541,7 @@
   document.getElementById('toast-dismiss').onclick = () => showToast('');
   function showUsernameError(msg){ usernameError.textContent = msg || ''; }
 
-  const BUILD_TAG = 'build v4';
+  const BUILD_TAG = 'build v10-penalty-corners';
   document.getElementById('build-tag').textContent = BUILD_TAG;
 
   window.addEventListener('error', (e)=> showToast('Error: ' + e.message));
@@ -715,6 +791,73 @@
     document.getElementById('match-fab').onclick = startMatchmaking;
     document.getElementById('cancel-search-btn').onclick = cancelMatchmaking;
 
+    // ---------- Penalty stage (shared visual + interaction engine) ----------
+    let pkAction = null;      // function(dir) called when player taps a corner, or null when not their turn to act
+    let pkAnimBusy = false;   // true while the reveal animation is playing
+    let lastRenderedShotCount = 0;
+
+    function setPkZonesMode(mode){ // 'shoot' | 'keep' | 'hidden'
+      document.querySelectorAll('.pk-zone-btn').forEach((b) => {
+        if (mode === 'hidden'){
+          b.style.visibility = 'hidden'; b.disabled = true; b.classList.remove('keeper-mode');
+        } else {
+          b.style.visibility = 'visible'; b.disabled = false;
+          b.classList.toggle('keeper-mode', mode === 'keep');
+        }
+      });
+    }
+
+    function resetPkVisual(){
+      const keeper = document.getElementById('pk-keeper');
+      const ball = document.getElementById('pk-ball');
+      if (keeper) keeper.setAttribute('class', 'dir-center');
+      if (ball) ball.setAttribute('class', 'dir-center');
+      const flash = document.getElementById('pk-result-flash');
+      if (flash){ flash.classList.remove('show','goal','miss'); flash.textContent = ''; }
+    }
+
+    function playPkAnimation(dir, keeperDir, result, onDone){
+      pkAnimBusy = true;
+      const keeper = document.getElementById('pk-keeper');
+      const ball = document.getElementById('pk-ball');
+      const flash = document.getElementById('pk-result-flash');
+      keeper.setAttribute('class', 'dir-' + keeperDir);
+      ball.setAttribute('class', 'dir-' + dir);
+      setTimeout(() => {
+        flash.textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+        flash.classList.add('show', result);
+        setTimeout(() => {
+          resetPkVisual();
+          pkAnimBusy = false;
+          if (onDone) onDone();
+        }, 950);
+      }, 550);
+    }
+
+    function renderPips(shots, myUid){
+      const box = document.getElementById('shot-pips');
+      box.innerHTML = '';
+      shots.forEach((s) => {
+        const pip = document.createElement('div');
+        pip.className = 'pip ' + s.result;
+        pip.textContent = s.result === 'goal' ? '⚽' : '✕';
+        pip.title = (s.uid === myUid ? 'You' : 'Opponent') + ' — ' + (s.result === 'goal' ? 'GOAL' : 'SAVED');
+        box.appendChild(pip);
+      });
+    }
+
+    function handlePkZoneClick(dir){
+      if (!pkAction || pkAnimBusy) return;
+      const cb = pkAction;
+      pkAction = null;
+      setPkZonesMode('hidden');
+      cb(dir);
+    }
+
+    document.querySelectorAll('.pk-zone-btn').forEach((b) => {
+      b.onclick = () => handlePkZoneClick(b.dataset.dir);
+    });
+
     async function startMatchmaking(){
       showScreen('searching-screen');
       searchSecondsLeft = SEARCH_SECONDS;
@@ -780,6 +923,7 @@
             names: { [currentUser.uid]: playerName, [candidate.id]: candSnap.data().name },
             shots: [],
             turnIndex: 0,
+            pendingShot: null,
             status: 'playing',
             winner: null,
             createdAt: serverTimestamp()
@@ -819,9 +963,13 @@
       activeMatchId = matchId;
       activeMatchIsBot = false;
       trophiesApplied = false;
+      lastRenderedShotCount = 0;
+      pkAction = null;
+      resetPkVisual();
       showScreen('match-screen');
-      document.getElementById('shot-log').innerHTML = '';
-      document.getElementById('shoot-btn').onclick = () => takeRealShot(matchId);
+      document.getElementById('shot-pips').innerHTML = '';
+      document.getElementById('pk-status').textContent = 'Loading match...';
+      setPkZonesMode('hidden');
 
       matchUnsub = onSnapshot(doc(db,'matches', matchId), (snap) => {
         if (!snap.exists()) return;
@@ -839,38 +987,66 @@
       const oppScore = m.shots.filter((s)=> s.uid===oppUid && s.result==='goal').length;
       document.getElementById('p1-score').textContent = myScore;
       document.getElementById('p2-score').textContent = oppScore;
+      renderPips(m.shots, myUid);
 
-      const log = document.getElementById('shot-log');
-      log.innerHTML = '';
-      m.shots.forEach((s) => {
-        const row = document.createElement('div');
-        row.className = 'shot-row ' + s.result;
-        const who = s.uid === myUid ? 'You' : (m.names[s.uid] || 'Opponent');
-        const icon = s.result === 'goal' ? '⚽' : '🧤';
-        const text = s.result === 'goal' ? 'GOAL!' : 'SAVED!';
-        row.innerHTML = `<span class="icon">${icon}</span><span>${escapeHtml(who)} — ${text}</span>`;
-        log.appendChild(row);
-      });
-      log.scrollTop = log.scrollHeight;
-
-      const shootBtn = document.getElementById('shoot-btn');
-      const turnEl = document.getElementById('turn-status');
+      // A new shot just resolved (both directions revealed) — play it out before
+      // updating the turn UI, so the finish screen never skips the last kick.
+      if (m.shots.length > lastRenderedShotCount){
+        const shot = m.shots[m.shots.length - 1];
+        lastRenderedShotCount = m.shots.length;
+        pkAction = null;
+        setPkZonesMode('hidden');
+        document.getElementById('pk-status').textContent = shot.result === 'goal' ? 'GOAL!' : 'SAVED!';
+        playPkAnimation(shot.dir, shot.keeperDir, shot.result, () => {
+          if (m.status === 'finished'){
+            document.getElementById('pk-status').textContent = 'Match finished.';
+            finishRealMatch(m, myUid, oppUid);
+          } else {
+            updatePkTurnUI(m, myUid);
+          }
+        });
+        return;
+      }
 
       if (m.status === 'finished'){
-        shootBtn.disabled = true;
-        turnEl.textContent = 'Match finished.';
+        setPkZonesMode('hidden');
+        document.getElementById('pk-status').textContent = 'Match finished.';
         finishRealMatch(m, myUid, oppUid);
         return;
       }
 
-      const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
-      const isMyTurn = turnUid === myUid;
-      shootBtn.disabled = !isMyTurn;
-      turnEl.textContent = isMyTurn ? 'Your turn — take the shot!' : (m.names[turnUid] || 'Opponent') + ' is shooting...';
+      updatePkTurnUI(m, myUid);
     }
 
-    async function takeRealShot(matchId){
-      const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
+    function updatePkTurnUI(m, myUid){
+      const statusEl = document.getElementById('pk-status');
+      const pending = m.pendingShot || null;
+      const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
+      const iAmShooter = turnUid === myUid;
+
+      if (pending){
+        if (pending.shooterUid === myUid){
+          pkAction = null;
+          setPkZonesMode('hidden');
+          statusEl.textContent = 'Waiting for goalkeeper...';
+        } else {
+          // Keeper never sees the shooter's chosen corner — only that a shot is coming.
+          pkAction = (dir) => submitKeeperDirection(activeMatchId, dir);
+          setPkZonesMode('keep');
+          statusEl.textContent = 'Dive! Guess the corner.';
+        }
+      } else if (iAmShooter){
+        pkAction = (dir) => submitShotDirection(activeMatchId, dir);
+        setPkZonesMode('shoot');
+        statusEl.textContent = 'Your turn — pick a corner!';
+      } else {
+        pkAction = null;
+        setPkZonesMode('hidden');
+        statusEl.textContent = (m.names[turnUid] || 'Opponent') + ' is choosing a corner...';
+      }
+    }
+
+    async function submitShotDirection(matchId, dir){
       const myUid = currentUser.uid;
       try{
         await runTransaction(db, async (tx) => {
@@ -878,11 +1054,27 @@
           const snap = await tx.get(ref);
           if (!snap.exists()) return;
           const m = snap.data();
-          if (m.status !== 'playing') return;
+          if (m.status !== 'playing' || m.pendingShot) return;
           const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
           if (turnUid !== myUid) return;
+          tx.update(ref, { pendingShot: { shooterUid: myUid, dir } });
+        });
+      } catch(e){ showToast('Shot failed: ' + e.message); }
+    }
 
-          const newShots = [...m.shots, { uid: myUid, result }];
+    async function submitKeeperDirection(matchId, keeperDir){
+      const myUid = currentUser.uid;
+      try{
+        await runTransaction(db, async (tx) => {
+          const ref = doc(db,'matches', matchId);
+          const snap = await tx.get(ref);
+          if (!snap.exists()) return;
+          const m = snap.data();
+          if (m.status !== 'playing' || !m.pendingShot) return;
+          if (m.pendingShot.shooterUid === myUid) return;
+          const dir = m.pendingShot.dir;
+          const result = (dir === keeperDir) ? 'miss' : 'goal';
+          const newShots = [...m.shots, { uid: m.pendingShot.shooterUid, dir, keeperDir, result }];
           const newTurnIndex = m.turnIndex + 1;
           const totalShots = SHOTS_PER_PLAYER * 2;
           let status = 'playing', winner = null;
@@ -892,9 +1084,9 @@
             const s2 = newShots.filter((s)=> s.uid===m.order[1] && s.result==='goal').length;
             winner = s1 === s2 ? 'draw' : (s1 > s2 ? m.order[0] : m.order[1]);
           }
-          tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner });
+          tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner, pendingShot: null });
         });
-      } catch(e){ showToast('Shot failed: ' + e.message); }
+      } catch(e){ showToast('Save failed: ' + e.message); }
     }
 
     async function finishRealMatch(m, myUid, oppUid){
@@ -916,20 +1108,27 @@
       return f + ' ' + l;
     }
 
+    function botPickDir(){
+      const dirs = ['left','center','right'];
+      return dirs[Math.floor(Math.random()*3)];
+    }
+
     function startBotMatch(){
       activeMatchIsBot = true;
       activeMatchId = null;
       trophiesApplied = false;
+      lastRenderedShotCount = 0;
       const botName = randomBotName();
       showScreen('match-screen');
       document.getElementById('p1-name').textContent = 'You';
       document.getElementById('p2-name').textContent = botName;
       document.getElementById('p1-score').textContent = '0';
       document.getElementById('p2-score').textContent = '0';
-      document.getElementById('shot-log').innerHTML = '';
-      document.getElementById('turn-status').textContent = 'Match starting...';
-      document.getElementById('shoot-btn').disabled = true;
-      document.getElementById('shoot-btn').onclick = null;
+      document.getElementById('shot-pips').innerHTML = '';
+      resetPkVisual();
+      pkAction = null;
+      setPkZonesMode('hidden');
+      document.getElementById('pk-status').textContent = 'Match starting...';
 
       const order = ['you','bot'];
       const shots = [];
@@ -945,25 +1144,41 @@
           return;
         }
         const who = order[idx % 2];
-        document.getElementById('turn-status').textContent = who==='you' ? 'Your turn — take the shot!' : botName + ' is shooting...';
-        document.getElementById('shoot-btn').disabled = who !== 'you';
-        if (who === 'bot'){
-          setTimeout(() => {
-            const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
-            shots.push({ who:'bot', result });
-            renderBotShots(shots, botName);
-            idx++;
-            step();
-          }, 1100);
-        } else {
-          document.getElementById('shoot-btn').onclick = () => {
-            document.getElementById('shoot-btn').disabled = true;
-            const result = Math.random() < GOAL_CHANCE ? 'goal' : 'miss';
-            shots.push({ who:'you', result });
-            renderBotShots(shots, botName);
-            idx++;
-            step();
+
+        if (who === 'you'){
+          document.getElementById('pk-status').textContent = 'Your turn — pick a corner!';
+          pkAction = (dir) => {
+            document.getElementById('pk-status').textContent = botName + ' is diving...';
+            const keeperDir = botPickDir();
+            const result = keeperDir === dir ? 'miss' : 'goal';
+            setTimeout(() => {
+              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+              playPkAnimation(dir, keeperDir, result, () => {
+                shots.push({ who:'you', result });
+                renderBotShots(shots, botName);
+                idx++; step();
+              });
+            }, 350);
           };
+          setPkZonesMode('shoot');
+        } else {
+          document.getElementById('pk-status').textContent = botName + ' is placing the ball...';
+          setPkZonesMode('hidden');
+          pkAction = null;
+          const dir = botPickDir(); // decided now, but never shown to you before you dive
+          setTimeout(() => {
+            document.getElementById('pk-status').textContent = 'Dive! Guess the corner.';
+            pkAction = (keeperDir) => {
+              const result = keeperDir === dir ? 'miss' : 'goal';
+              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+              playPkAnimation(dir, keeperDir, result, () => {
+                shots.push({ who:'bot', result });
+                renderBotShots(shots, botName);
+                idx++; step();
+              });
+            };
+            setPkZonesMode('keep');
+          }, 700);
         }
       }
       step();
@@ -974,18 +1189,7 @@
       const botScore = shots.filter((s)=>s.who==='bot' && s.result==='goal').length;
       document.getElementById('p1-score').textContent = myScore;
       document.getElementById('p2-score').textContent = botScore;
-      const log = document.getElementById('shot-log');
-      log.innerHTML = '';
-      shots.forEach((s) => {
-        const row = document.createElement('div');
-        row.className = 'shot-row ' + s.result;
-        const who = s.who === 'you' ? 'You' : botName;
-        const icon = s.result === 'goal' ? '⚽' : '🧤';
-        const text = s.result === 'goal' ? 'GOAL!' : 'SAVED!';
-        row.innerHTML = `<span class="icon">${icon}</span><span>${escapeHtml(who)} — ${text}</span>`;
-        log.appendChild(row);
-      });
-      log.scrollTop = log.scrollHeight;
+      renderPips(shots.map((s)=> ({ uid: s.who, result: s.result })), 'you');
     }
 
     async function finishBotMatch(winner){
