@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>İOZ FOOTBALL PENALTY ONLINE</title>
+<title>İOZ PENALTI ONLINE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -250,6 +250,14 @@
   #pk-result-flash.miss{ color:var(--red); }
 
   #pk-status{ font-size:13px; color:var(--muted); text-align:center; min-height:18px; }
+  .pk-role{
+    display:none; padding:5px 14px; border-radius:999px; font-weight:800; font-size:11px;
+    letter-spacing:0.5px; text-transform:uppercase;
+  }
+  .pk-role.show{ display:inline-flex; align-items:center; gap:5px; }
+  .pk-role.role-shoot{ background:rgba(242,183,5,0.15); color:var(--gold2); border:1px solid rgba(242,183,5,0.4); }
+  .pk-role.role-keep{ background:rgba(239,68,68,0.15); color:#ff9d9d; border:1px solid rgba(239,68,68,0.4); }
+  .pk-role.role-wait{ background:rgba(123,139,173,0.15); color:var(--muted); border:1px solid var(--border); }
   #pk-zones{ display:flex; gap:8px; width:100%; }
   .pk-zone-btn{
     flex:1; padding:14px 4px; border-radius:12px; border:1px solid var(--border);
@@ -391,17 +399,17 @@
   </div>
 
   <div id="auth-screen" class="screen">
-    <h1 class="brand">İOZ<br>FOOTBALL PENALTY<small>ONLINE</small></h1>
-    <p class="sub">Sign in to play online penalty shootouts and climb the leaderboard.</p>
-    <button id="google-btn" class="btn btn-gold">Sign in with Google</button>
+    <h1 class="brand">İOZ<br>PENALTI<small>ONLINE</small></h1>
+    <p class="sub">Online penaltı atışları oynamak ve sıralamada yükselmek için giriş yap.</p>
+    <button id="google-btn" class="btn btn-gold">Google ile Giriş Yap</button>
     <div id="auth-error" class="error"></div>
   </div>
 
   <div id="username-screen" class="screen hidden">
-    <h1 class="display" style="font-size:22px;">CHOOSE YOUR NAME</h1>
-    <p class="sub">This is how other players will see you.</p>
-    <input id="username-input" type="text" placeholder="Player name" maxlength="20">
-    <button id="username-submit-btn" class="btn btn-gold">Continue</button>
+    <h1 class="display" style="font-size:22px;">KULLANICI ADINI SEÇ</h1>
+    <p class="sub">Diğer oyuncular seni bu isimle görecek.</p>
+    <input id="username-input" type="text" placeholder="Oyuncu adı" maxlength="20">
+    <button id="username-submit-btn" class="btn btn-gold">Devam Et</button>
     <div id="username-error" class="error"></div>
   </div>
 
@@ -409,15 +417,15 @@
     <div id="home-header">
       <div class="who">
         <div class="name" id="home-username">-</div>
-        <div class="sub">İOZ FOOTBALL PENALTY ONLINE</div>
+        <div class="sub">İOZ PENALTI ONLINE</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         <div class="trophy-chip"><svg class="icon"><use href="#icon-trophy"/></svg> <span id="home-trophies">0</span></div>
-        <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Log out</button>
+        <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Çıkış Yap</button>
       </div>
     </div>
     <div id="home-body">
-      <button id="leaderboard-link" class="btn btn-ghost"><svg class="icon"><use href="#icon-trophy"/></svg> Ranking</button>
+      <button id="leaderboard-link" class="btn btn-ghost"><svg class="icon"><use href="#icon-trophy"/></svg> Sıralama</button>
       <div class="glow-ball">
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -440,17 +448,17 @@
         </svg>
       </div>
       <div style="text-align:center;">
-        <div class="display" style="font-size:20px; color:var(--gold2);">READY TO SCORE?</div>
-        <p class="sub">Tap 1v1 MATCH to find an opponent.</p>
+        <div class="display" style="font-size:20px; color:var(--gold2);">GOL ATMAYA HAZIR MISIN?</div>
+        <p class="sub">Rakip bulmak için 1v1 MAÇ'a dokun.</p>
       </div>
-      <button id="match-fab"><span><svg class="icon"><use href="#icon-bolt"/></svg> 1v1 MATCH</span><span class="small">find opponent</span></button>
+      <button id="match-fab"><span><svg class="icon"><use href="#icon-bolt"/></svg> 1v1 MAÇ</span><span class="small">rakip bul</span></button>
       <button id="chat-fab"><svg class="icon"><use href="#icon-chat"/></svg></button>
       <div id="chat-panel">
-        <div id="chat-head"><span><svg class="icon"><use href="#icon-chat"/></svg> Match Chat</span><button id="chat-close-btn"><svg class="icon"><use href="#icon-close"/></svg></button></div>
+        <div id="chat-head"><span><svg class="icon"><use href="#icon-chat"/></svg> Maç Sohbeti</span><button id="chat-close-btn"><svg class="icon"><use href="#icon-close"/></svg></button></div>
         <div id="chat-messages"></div>
         <div id="chat-input-row">
-          <input id="chat-input" type="text" maxlength="300" placeholder="Say something...">
-          <button id="chat-send-btn">Send</button>
+          <input id="chat-input" type="text" maxlength="300" placeholder="Bir şeyler yaz...">
+          <button id="chat-send-btn">Gönder</button>
         </div>
       </div>
     </div>
@@ -459,19 +467,19 @@
   <div id="searching-screen" class="screen hidden">
     <div class="radar"><svg class="icon"><use href="#icon-radar"/></svg></div>
     <div id="search-timer" class="display">10</div>
-    <div id="search-status">Searching for a real opponent...</div>
-    <button id="cancel-search-btn" class="btn btn-ghost">Cancel</button>
+    <div id="search-status">Gerçek rakip aranıyor...</div>
+    <button id="cancel-search-btn" class="btn btn-ghost">İptal</button>
   </div>
 
   <div id="match-screen" class="screen hidden">
     <div id="match-vs">
       <div class="vs-side">
-        <div class="pname" id="p1-name">You</div>
+        <div class="pname" id="p1-name">Sen</div>
         <div class="pscore" id="p1-score">0</div>
       </div>
       <div class="vs-mid display">VS</div>
       <div class="vs-side" style="text-align:right;">
-        <div class="pname" id="p2-name">Opponent</div>
+        <div class="pname" id="p2-name">Rakip</div>
         <div class="pscore" id="p2-score">0</div>
       </div>
     </div>
@@ -509,26 +517,27 @@
       <div id="pk-result-flash"></div>
     </div>
 
+    <div id="pk-role" class="pk-role"></div>
     <div id="pk-status">-</div>
     <div id="pk-zones">
-      <button class="pk-zone-btn" data-dir="left"><span><svg class="icon" style="transform:rotate(-90deg);"><use href="#icon-chevron"/></svg></span>LEFT</button>
-      <button class="pk-zone-btn" data-dir="center"><span><svg class="icon"><use href="#icon-chevron"/></svg></span>CENTER</button>
-      <button class="pk-zone-btn" data-dir="right"><span><svg class="icon" style="transform:rotate(90deg);"><use href="#icon-chevron"/></svg></span>RIGHT</button>
+      <button class="pk-zone-btn" data-dir="left"><span><svg class="icon" style="transform:rotate(-90deg);"><use href="#icon-chevron"/></svg></span>SOL</button>
+      <button class="pk-zone-btn" data-dir="center"><span><svg class="icon"><use href="#icon-chevron"/></svg></span>ORTA</button>
+      <button class="pk-zone-btn" data-dir="right"><span><svg class="icon" style="transform:rotate(90deg);"><use href="#icon-chevron"/></svg></span>SAĞ</button>
     </div>
     <div id="shot-pips"></div>
   </div>
 
   <div id="result-screen" class="screen hidden">
     <div id="result-emoji"><svg class="icon"><use href="#icon-ball"/></svg></div>
-    <h1 class="display" id="result-title">DRAW</h1>
+    <h1 class="display" id="result-title">BERABERE</h1>
     <div id="result-trophy">+0 <svg class="icon"><use href="#icon-trophy"/></svg></div>
-    <button id="result-home-btn" class="btn btn-gold btn-block">Back to Home</button>
+    <button id="result-home-btn" class="btn btn-gold btn-block">Ana Sayfaya Dön</button>
   </div>
 
   <div id="leaderboard-screen" class="screen hidden">
     <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-      <h1 class="display" style="font-size:20px; margin:0; display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#icon-trophy"/></svg> RANKING</h1>
-      <button id="lb-back-btn" class="btn btn-ghost">Back</button>
+      <h1 class="display" style="font-size:20px; margin:0; display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#icon-trophy"/></svg> SIRALAMA</h1>
+      <button id="lb-back-btn" class="btn btn-ghost">Geri</button>
     </div>
     <div id="lb-list"></div>
   </div>
@@ -573,7 +582,7 @@
       var t = document.getElementById('toast');
       var tt = document.getElementById('toast-text');
       if (t && tt){
-        tt.textContent = 'App failed to start (Firebase scripts may be blocked by your network/ad-blocker). Try another network or disable ad-blocker.';
+        tt.textContent = 'Uygulama başlatılamadı (Firebase betikleri ağınız veya reklam engelleyiciniz tarafından engellenmiş olabilir). Başka bir ağ deneyin veya reklam engelleyiciyi kapatın.';
         t.classList.add('show');
       }
     }
@@ -656,9 +665,9 @@
 
   function translateAuthError(e){
     const code = e.code || '';
-    if (code.includes('unauthorized-domain')) return 'This domain is not authorized in Firebase (Authentication > Settings > Authorized domains).';
-    if (code.includes('popup-closed-by-user')) return 'Sign-in window closed, try again.';
-    return (e.message || 'Something went wrong.') + (code ? ' (' + code + ')' : '');
+    if (code.includes('unauthorized-domain')) return 'Bu alan adı Firebase\'de yetkilendirilmemiş (Authentication > Settings > Authorized domains).';
+    if (code.includes('popup-closed-by-user')) return 'Giriş penceresi kapatıldı, tekrar dene.';
+    return (e.message || 'Bir şeyler ters gitti.') + (code ? ' (' + code + ')' : '');
   }
 
   function escapeHtml(str){
@@ -671,7 +680,7 @@
 
   const configOk = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('BURAYA');
   if (!configOk){
-    configWarning.textContent = 'Firebase config missing.';
+    configWarning.textContent = 'Firebase ayarları eksik.';
     document.getElementById('google-btn').disabled = true;
     window.iozLog('HATA: firebaseConfig eksik/placeholder');
   } else {
@@ -686,20 +695,20 @@
     // Redirect flow sonrası geri dönünce burası tetiklenir; sonucu bekleyene kadar
     // butonu kilitleyip kullanıcıya "giriş yapılıyor" geri bildirimi veriyoruz.
     googleBtn.disabled = true;
-    googleBtn.textContent = 'Loading...';
+    googleBtn.textContent = 'Yükleniyor...';
     window.iozLog('getRedirectResult çağrılıyor...');
     getRedirectResult(auth)
       .then((res) => window.iozLog('getRedirectResult sonuç: ' + (res && res.user ? ('user=' + res.user.uid) : 'null (redirect yok / ilk yükleme)')))
       .catch((e)=> { window.iozLog('getRedirectResult HATA: ' + (e.code || e.message)); showToast(translateAuthError(e)); })
       .finally(() => {
         googleBtn.disabled = false;
-        googleBtn.textContent = 'Sign in with Google';
+        googleBtn.textContent = 'Google ile Giriş Yap';
       });
 
     googleBtn.onclick = async () => {
       showToast('');
       googleBtn.disabled = true;
-      googleBtn.textContent = 'Signing in...';
+      googleBtn.textContent = 'Giriş yapılıyor...';
       window.iozLog('google-btn tıklandı, signInWithPopup deneniyor');
 
       // NOT: Bu cihazda signInWithRedirect test edildi ve Google'dan dönüşte
@@ -710,14 +719,14 @@
         const res = await signInWithPopup(auth, provider);
         window.iozLog('signInWithPopup BAŞARILI: uid=' + res.user.uid);
         googleBtn.disabled = false;
-        googleBtn.textContent = 'Sign in with Google';
+        googleBtn.textContent = 'Google ile Giriş Yap';
       } catch(e){
         const code = e.code || '';
         window.iozLog('signInWithPopup HATA: ' + code);
         if (code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')){
           // Kullanıcı gerçekten iptal etti; sessizce butonu eski haline döndür.
           googleBtn.disabled = false;
-          googleBtn.textContent = 'Sign in with Google';
+          googleBtn.textContent = 'Google ile Giriş Yap';
           return;
         }
         if (code.includes('popup-blocked') || code.includes('operation-not-supported')){
@@ -728,12 +737,12 @@
             window.iozLog('signInWithRedirect HATA: ' + (e2.code || e2.message));
             showToast(translateAuthError(e2));
             googleBtn.disabled = false;
-            googleBtn.textContent = 'Sign in with Google';
+            googleBtn.textContent = 'Google ile Giriş Yap';
           }
         } else {
           showToast(translateAuthError(e));
           googleBtn.disabled = false;
-          googleBtn.textContent = 'Sign in with Google';
+          googleBtn.textContent = 'Google ile Giriş Yap';
         }
       }
     };
@@ -773,8 +782,8 @@
     document.getElementById('username-submit-btn').onclick = async () => {
       showUsernameError('');
       const name = document.getElementById('username-input').value.trim();
-      if (name.length < 3 || name.length > 20) return showUsernameError('Name must be 3-20 characters.');
-      if (!/^[a-zA-Z0-9ÇçĞğİıÖöŞşÜü_ ]+$/.test(name)) return showUsernameError('Only letters, numbers, spaces and _ allowed.');
+      if (name.length < 3 || name.length > 20) return showUsernameError('İsim 3-20 karakter arasında olmalı.');
+      if (!/^[a-zA-Z0-9ÇçĞğİıÖöŞşÜü_ ]+$/.test(name)) return showUsernameError('Sadece harf, rakam, boşluk ve _ kullanılabilir.');
 
       const key = name.toLowerCase();
       const btn = document.getElementById('username-submit-btn');
@@ -791,7 +800,7 @@
         playerTrophies = 0;
         enterHome();
       } catch(e){
-        if (e.message === 'TAKEN') showUsernameError('That name is already taken.');
+        if (e.message === 'TAKEN') showUsernameError('Bu isim zaten alınmış.');
         else showUsernameError(translateAuthError(e));
       } finally {
         btn.disabled = false;
@@ -817,7 +826,7 @@
     async function openLeaderboard(){
       showScreen('leaderboard-screen');
       const list = document.getElementById('lb-list');
-      list.innerHTML = '<div class="sub">Loading...</div>';
+      list.innerHTML = '<div class="sub">Yükleniyor...</div>';
       try{
         const q = query(collection(db,'users'), orderBy('trophies','desc'), limit(50));
         const snap = await getDocs(q);
@@ -836,9 +845,9 @@
           `;
           list.appendChild(row);
         });
-        if (rank===0) list.innerHTML = '<div class="sub">No players yet.</div>';
+        if (rank===0) list.innerHTML = '<div class="sub">Henüz oyuncu yok.</div>';
       } catch(e){
-        list.innerHTML = '<div class="error">Could not load ranking.</div>';
+        list.innerHTML = '<div class="error">Sıralama yüklenemedi.</div>';
       }
     }
 
@@ -916,6 +925,22 @@
     let pkAnimBusy = false;   // true while the reveal animation is playing
     let lastRenderedShotCount = 0;
 
+    // Rol rozetini günceller, böylece oyuncu her an "atıcı mıyım, kaleci miyim,
+    // yoksa sadece bekliyor muyum" net şekilde görür.
+    function setPkRole(mode){ // 'shoot' | 'keep' | 'wait' | 'hidden'
+      const el = document.getElementById('pk-role');
+      if (!el) return;
+      if (mode === 'hidden'){ el.className = 'pk-role'; el.textContent = ''; return; }
+      const map = {
+        shoot: { cls:'role-shoot', text:'ŞUT SIRASI SENDE' },
+        keep:  { cls:'role-keep',  text:'KALECİSİN — DAL!' },
+        wait:  { cls:'role-wait',  text:'BEKLE' }
+      };
+      const cfg = map[mode];
+      el.className = 'pk-role show ' + cfg.cls;
+      el.textContent = cfg.text;
+    }
+
     function setPkZonesMode(mode){ // 'shoot' | 'keep' | 'hidden'
       document.querySelectorAll('.pk-zone-btn').forEach((b) => {
         if (mode === 'hidden'){
@@ -944,7 +969,7 @@
       keeper.setAttribute('class', 'dir-' + keeperDir);
       ball.setAttribute('class', 'dir-' + dir);
       setTimeout(() => {
-        flash.textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+        flash.textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
         flash.classList.add('show', result);
         setTimeout(() => {
           resetPkVisual();
@@ -961,7 +986,7 @@
         const pip = document.createElement('div');
         pip.className = 'pip ' + s.result;
         pip.innerHTML = '<svg class="icon"><use href="#icon-' + (s.result === 'goal' ? 'ball' : 'close') + '"/></svg>';
-        pip.title = (s.uid === myUid ? 'You' : 'Opponent') + ' — ' + (s.result === 'goal' ? 'GOAL' : 'SAVED');
+        pip.title = (s.uid === myUid ? 'Sen' : 'Rakip') + ' — ' + (s.result === 'goal' ? 'GOL' : 'KURTARDI');
         box.appendChild(pip);
       });
     }
@@ -989,7 +1014,7 @@
           uid: currentUser.uid, name: playerName, createdAt: serverTimestamp(), matchId: null
         });
       } catch(e){
-        showToast('Could not join queue: ' + e.message);
+        showToast('Kuyruğa katılınamadı: ' + e.message);
         showScreen('home-screen');
         return;
       }
@@ -1088,7 +1113,8 @@
       resetPkVisual();
       showScreen('match-screen');
       document.getElementById('shot-pips').innerHTML = '';
-      document.getElementById('pk-status').textContent = 'Loading match...';
+      document.getElementById('pk-status').textContent = 'Maç yükleniyor...';
+      setPkRole('hidden');
       setPkZonesMode('hidden');
 
       matchUnsub = onSnapshot(doc(db,'matches', matchId), (snap) => {
@@ -1100,8 +1126,8 @@
     function renderMatch(m){
       const myUid = currentUser.uid;
       const oppUid = m.order.find((u) => u !== myUid) || m.order[1];
-      document.getElementById('p1-name').textContent = 'You';
-      document.getElementById('p2-name').textContent = m.names[oppUid] || 'Opponent';
+      document.getElementById('p1-name').textContent = 'Sen';
+      document.getElementById('p2-name').textContent = m.names[oppUid] || 'Rakip';
 
       const myScore = m.shots.filter((s)=> s.uid===myUid && s.result==='goal').length;
       const oppScore = m.shots.filter((s)=> s.uid===oppUid && s.result==='goal').length;
@@ -1115,11 +1141,12 @@
         const shot = m.shots[m.shots.length - 1];
         lastRenderedShotCount = m.shots.length;
         pkAction = null;
+        setPkRole('hidden');
         setPkZonesMode('hidden');
-        document.getElementById('pk-status').textContent = shot.result === 'goal' ? 'GOAL!' : 'SAVED!';
+        document.getElementById('pk-status').textContent = shot.result === 'goal' ? 'GOL!' : 'KURTARDI!';
         playPkAnimation(shot.dir, shot.keeperDir, shot.result, () => {
           if (m.status === 'finished'){
-            document.getElementById('pk-status').textContent = 'Match finished.';
+            document.getElementById('pk-status').textContent = 'Maç bitti.';
             finishRealMatch(m, myUid, oppUid);
           } else {
             updatePkTurnUI(m, myUid);
@@ -1129,8 +1156,9 @@
       }
 
       if (m.status === 'finished'){
+        setPkRole('hidden');
         setPkZonesMode('hidden');
-        document.getElementById('pk-status').textContent = 'Match finished.';
+        document.getElementById('pk-status').textContent = 'Maç bitti.';
         finishRealMatch(m, myUid, oppUid);
         return;
       }
@@ -1146,23 +1174,28 @@
 
       if (pending){
         if (pending.shooterUid === myUid){
+          // Şutunu attın, şimdi rakip kalecinin dalışını bekliyorsun — yapman gereken bir şey yok.
           pkAction = null;
+          setPkRole('wait');
           setPkZonesMode('hidden');
-          statusEl.textContent = 'Waiting for goalkeeper...';
+          statusEl.textContent = 'Şutunu attın. Rakip kalecinin hangi köşeye dalacağını bekliyoruz...';
         } else {
           // Keeper never sees the shooter's chosen corner — only that a shot is coming.
           pkAction = (dir) => submitKeeperDirection(activeMatchId, dir);
+          setPkRole('keep');
           setPkZonesMode('keep');
-          statusEl.textContent = 'Dive! Guess the corner.';
+          statusEl.textContent = 'Rakip şutunu attı! Şimdi kalecisin — topun gideceğini düşündüğün köşeyi seç ve o yöne dal.';
         }
       } else if (iAmShooter){
         pkAction = (dir) => submitShotDirection(activeMatchId, dir);
+        setPkRole('shoot');
         setPkZonesMode('shoot');
-        statusEl.textContent = 'Your turn — pick a corner!';
+        statusEl.textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
       } else {
         pkAction = null;
+        setPkRole('wait');
         setPkZonesMode('hidden');
-        statusEl.textContent = (m.names[turnUid] || 'Opponent') + ' is choosing a corner...';
+        statusEl.textContent = (m.names[turnUid] || 'Rakip') + ' şutunu hazırlıyor. Sıra ona geldi, bekle — az sonra kalecilik sıran gelecek.';
       }
     }
 
@@ -1179,7 +1212,7 @@
           if (turnUid !== myUid) return;
           tx.update(ref, { pendingShot: { shooterUid: myUid, dir } });
         });
-      } catch(e){ showToast('Shot failed: ' + e.message); }
+      } catch(e){ showToast('Şut gönderilemedi: ' + e.message); }
     }
 
     async function submitKeeperDirection(matchId, keeperDir){
@@ -1206,7 +1239,7 @@
           }
           tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner, pendingShot: null });
         });
-      } catch(e){ showToast('Save failed: ' + e.message); }
+      } catch(e){ showToast('Kaydedilemedi: ' + e.message); }
     }
 
     async function finishRealMatch(m, myUid, oppUid){
@@ -1240,15 +1273,16 @@
       lastRenderedShotCount = 0;
       const botName = randomBotName();
       showScreen('match-screen');
-      document.getElementById('p1-name').textContent = 'You';
+      document.getElementById('p1-name').textContent = 'Sen';
       document.getElementById('p2-name').textContent = botName;
       document.getElementById('p1-score').textContent = '0';
       document.getElementById('p2-score').textContent = '0';
       document.getElementById('shot-pips').innerHTML = '';
       resetPkVisual();
       pkAction = null;
+      setPkRole('hidden');
       setPkZonesMode('hidden');
-      document.getElementById('pk-status').textContent = 'Match starting...';
+      document.getElementById('pk-status').textContent = 'Maç başlıyor...';
 
       const order = ['you','bot'];
       const shots = [];
@@ -1266,13 +1300,16 @@
         const who = order[idx % 2];
 
         if (who === 'you'){
-          document.getElementById('pk-status').textContent = 'Your turn — pick a corner!';
+          setPkRole('shoot');
+          document.getElementById('pk-status').textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
           pkAction = (dir) => {
-            document.getElementById('pk-status').textContent = botName + ' is diving...';
+            setPkRole('wait');
+            document.getElementById('pk-status').textContent = botName + ' dalıyor...';
             const keeperDir = botPickDir();
             const result = keeperDir === dir ? 'miss' : 'goal';
             setTimeout(() => {
-              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+              setPkRole('hidden');
+              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
               playPkAnimation(dir, keeperDir, result, () => {
                 shots.push({ who:'you', result });
                 renderBotShots(shots, botName);
@@ -1282,15 +1319,18 @@
           };
           setPkZonesMode('shoot');
         } else {
-          document.getElementById('pk-status').textContent = botName + ' is placing the ball...';
+          setPkRole('wait');
+          document.getElementById('pk-status').textContent = botName + ' şutunu hazırlıyor. Az sonra sıra kaleciliğe gelecek...';
           setPkZonesMode('hidden');
           pkAction = null;
           const dir = botPickDir(); // decided now, but never shown to you before you dive
           setTimeout(() => {
-            document.getElementById('pk-status').textContent = 'Dive! Guess the corner.';
+            setPkRole('keep');
+            document.getElementById('pk-status').textContent = botName + ' şutunu attı! Kalecisin — köşeyi tahmin edip dal.';
             pkAction = (keeperDir) => {
               const result = keeperDir === dir ? 'miss' : 'goal';
-              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOAL!' : 'SAVED!';
+              setPkRole('hidden');
+              document.getElementById('pk-status').textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
               playPkAnimation(dir, keeperDir, result, () => {
                 shots.push({ who:'bot', result });
                 renderBotShots(shots, botName);
@@ -1338,7 +1378,7 @@
       const trophyEl = document.getElementById('result-trophy');
       const iconName = kind === 'win' ? 'trophy' : (kind === 'lose' ? 'frown' : 'handshake');
       emojiEl.innerHTML = '<svg class="icon"><use href="#icon-' + iconName + '"/></svg>';
-      titleEl.textContent = kind === 'win' ? 'VICTORY' : (kind === 'lose' ? 'DEFEAT' : 'DRAW');
+      titleEl.textContent = kind === 'win' ? 'ZAFER' : (kind === 'lose' ? 'MAĞLUBİYET' : 'BERABERE');
       trophyEl.innerHTML = (delta>0?'+':'') + delta + ' <svg class="icon"><use href="#icon-trophy"/></svg>';
       trophyEl.className = delta>0 ? 'pos' : (delta<0 ? 'neg' : 'zero');
       showScreen('result-screen');
