@@ -347,6 +347,14 @@
   .pk-role.role-shoot{ background:rgba(242,183,5,0.15); color:var(--gold2); border:1px solid rgba(242,183,5,0.4); }
   .pk-role.role-keep{ background:rgba(239,68,68,0.15); color:#ff9d9d; border:1px solid rgba(239,68,68,0.4); }
   .pk-role.role-wait{ background:rgba(123,139,173,0.15); color:var(--muted); border:1px solid var(--border); }
+  #pk-turn-timer{
+    display:none; align-items:center; justify-content:center;
+    width:30px; height:30px; border-radius:50%; margin:0 auto;
+    font-family:'Anton',sans-serif; font-size:14px; color:var(--text);
+    border:2px solid var(--border); background:var(--panel2);
+  }
+  #pk-turn-timer.show{ display:flex; }
+  #pk-turn-timer.low{ color:#fff; border-color:var(--red); background:rgba(239,68,68,0.35); }
   #pk-zones{ display:flex; gap:8px; width:100%; }
   .pk-zone-btn{
     flex:1; padding:14px 4px; border-radius:12px; border:1px solid var(--border);
@@ -631,6 +639,7 @@
     </div>
 
     <div id="pk-role" class="pk-role"></div>
+    <div id="pk-turn-timer">10</div>
     <div id="pk-status">-</div>
     <div id="pk-zones">
       <button class="pk-zone-btn" data-dir="left"><span><svg class="icon" style="transform:rotate(-90deg);"><use href="#icon-chevron"/></svg></span>SOL</button>
@@ -736,7 +745,8 @@
   const CHAT_MESSAGE_TTL_HOURS = 24; // Firestore TTL politikası bu süre geçince mesajı otomatik siler
   const CHAT_SEND_COOLDOWN_MS = 2500; // spam mesajın her açık panelde okuma sayısını çarpmasını önler
   const SEARCH_SECONDS = 10;
-  const SHOTS_PER_PLAYER = 2;
+  const SHOTS_PER_PLAYER = 3;
+  const TURN_SECONDS = 10; // her seçim (şut/kaleci) için verilen süre
 
   const BOT_FIRST = ["Kaan","Mert","Efe","Deniz","Arda","Berk","Ege","Emre","Poyraz","Kerem","Alex","Leo","Marco","Diego","Lucas","Noah","Mateo","Ivan","Ryan","Owen","Bruno","Theo"];
   const BOT_LAST = ["Yıldız","Demir","Aydın","Kara","Şahin","Öztürk","Aksoy","Bulut","Rossi","Silva","Garcia","Muller","Novak","Costa","Baker","Fischer","Lopez","Moreau","Hansen"];
@@ -1077,6 +1087,42 @@
     let pkAction = null;      // function(dir) called when player taps a corner, or null when not their turn to act
     let pkAnimBusy = false;   // true while the reveal animation is playing
     let lastRenderedShotCount = 0;
+    let lastMatchData = null; // en son gelen gerçek maç verisi - hata sonrası ekranı bu veriden onarmak için
+
+    // ---------- Per-turn 10 second countdown ----------
+    let turnTimerInterval = null;
+    let turnTimerSecondsLeft = 0;
+
+    function clearTurnTimer(){
+      if (turnTimerInterval){ clearInterval(turnTimerInterval); turnTimerInterval = null; }
+      const el = document.getElementById('pk-turn-timer');
+      if (el){ el.classList.remove('show','low'); }
+    }
+
+    // Oyuncunun şut/kaleci seçimi yapması için TURN_SECONDS kadar süre başlatır.
+    // Süre dolarsa pkAction hâlâ ayarlıysa (oyuncu henüz seçim yapmadıysa)
+    // rastgele bir yön seçilip otomatik olarak oynatılır, oyun asla kilitlenmez.
+    function startTurnTimer(){
+      clearTurnTimer();
+      const el = document.getElementById('pk-turn-timer');
+      turnTimerSecondsLeft = TURN_SECONDS;
+      if (el){ el.textContent = turnTimerSecondsLeft; el.classList.add('show'); el.classList.remove('low'); }
+      turnTimerInterval = setInterval(() => {
+        turnTimerSecondsLeft--;
+        if (el){
+          el.textContent = Math.max(turnTimerSecondsLeft, 0);
+          if (turnTimerSecondsLeft <= 3) el.classList.add('low');
+        }
+        if (turnTimerSecondsLeft <= 0){
+          clearInterval(turnTimerInterval); turnTimerInterval = null;
+          if (pkAction && !pkAnimBusy){
+            const dirs = ['left','center','right'];
+            const randomDir = dirs[Math.floor(Math.random()*3)];
+            handlePkZoneClick(randomDir);
+          }
+        }
+      }, 1000);
+    }
 
     // Rol rozetini günceller, böylece oyuncu her an "atıcı mıyım, kaleci miyim,
     // yoksa sadece bekliyor muyum" net şekilde görür.
@@ -1168,6 +1214,7 @@
 
     function handlePkZoneClick(dir){
       if (!pkAction || pkAnimBusy) return;
+      clearTurnTimer();
       const cb = pkAction;
       pkAction = null;
       setPkZonesMode('hidden');
@@ -1298,6 +1345,8 @@
       activeMatchIsBot = false;
       trophiesApplied = false;
       lastRenderedShotCount = 0;
+      lastMatchData = null;
+      clearTurnTimer();
       pkAction = null;
       resetPkVisual();
       showScreen('match-screen');
@@ -1314,6 +1363,7 @@
     }
 
     function renderMatch(m){
+      lastMatchData = m; // hata sonrası ekranı onarabilmek için en son veriyi sakla
       const myUid = currentUser.uid;
       const oppUid = m.order.find((u) => u !== myUid) || m.order[1];
       document.getElementById('p1-name').textContent = 'Sen';
@@ -1330,6 +1380,7 @@
       if (m.shots.length > lastRenderedShotCount){
         const shot = m.shots[m.shots.length - 1];
         lastRenderedShotCount = m.shots.length;
+        clearTurnTimer();
         pkAction = null;
         setPkRole('hidden');
         setPkZonesMode('hidden');
@@ -1346,6 +1397,7 @@
       }
 
       if (m.status === 'finished'){
+        clearTurnTimer();
         setPkRole('hidden');
         setPkZonesMode('hidden');
         document.getElementById('pk-status').textContent = 'Maç bitti.';
@@ -1365,6 +1417,7 @@
       if (pending){
         if (pending.shooterUid === myUid){
           // Şutunu attın, şimdi rakip kalecinin dalışını bekliyorsun — yapman gereken bir şey yok.
+          clearTurnTimer();
           pkAction = null;
           setPkRole('wait');
           setPkZonesMode('hidden');
@@ -1375,13 +1428,16 @@
           setPkRole('keep');
           setPkZonesMode('keep');
           statusEl.textContent = 'Rakip şutunu attı! Şimdi kalecisin — topun gideceğini düşündüğün köşeyi seç ve o yöne dal.';
+          startTurnTimer();
         }
       } else if (iAmShooter){
         pkAction = (dir) => submitShotDirection(activeMatchId, dir);
         setPkRole('shoot');
         setPkZonesMode('shoot');
         statusEl.textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
+        startTurnTimer();
       } else {
+        clearTurnTimer();
         pkAction = null;
         setPkRole('wait');
         setPkZonesMode('hidden');
@@ -1395,14 +1451,19 @@
         await runTransaction(db, async (tx) => {
           const ref = doc(db,'matches', matchId);
           const snap = await tx.get(ref);
-          if (!snap.exists()) return;
+          if (!snap.exists()) throw new Error('Maç bulunamadı.');
           const m = snap.data();
-          if (m.status !== 'playing' || m.pendingShot) return;
+          if (m.status !== 'playing' || m.pendingShot) throw new Error('Bu şut artık geçerli değil, ekran güncelleniyor.');
           const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
-          if (turnUid !== myUid) return;
+          if (turnUid !== myUid) throw new Error('Sıra sende değil, ekran güncelleniyor.');
           tx.update(ref, { pendingShot: { shooterUid: myUid, dir } });
         });
-      } catch(e){ showToast('Şut gönderilemedi: ' + e.message); }
+      } catch(e){
+        // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
+        // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
+        showToast('Şut gönderilemedi: ' + e.message);
+        if (lastMatchData) updatePkTurnUI(lastMatchData, myUid);
+      }
     }
 
     async function submitKeeperDirection(matchId, keeperDir){
@@ -1411,10 +1472,10 @@
         await runTransaction(db, async (tx) => {
           const ref = doc(db,'matches', matchId);
           const snap = await tx.get(ref);
-          if (!snap.exists()) return;
+          if (!snap.exists()) throw new Error('Maç bulunamadı.');
           const m = snap.data();
-          if (m.status !== 'playing' || !m.pendingShot) return;
-          if (m.pendingShot.shooterUid === myUid) return;
+          if (m.status !== 'playing' || !m.pendingShot) throw new Error('Kurtaracak bir şut yok, ekran güncelleniyor.');
+          if (m.pendingShot.shooterUid === myUid) throw new Error('Kendi şutunu kurtaramazsın, ekran güncelleniyor.');
           const dir = m.pendingShot.dir;
           const result = (dir === keeperDir) ? 'miss' : 'goal';
           const newShots = [...m.shots, { uid: m.pendingShot.shooterUid, dir, keeperDir, result }];
@@ -1429,7 +1490,12 @@
           }
           tx.update(ref, { shots: newShots, turnIndex: newTurnIndex, status, winner, pendingShot: null });
         });
-      } catch(e){ showToast('Kaydedilemedi: ' + e.message); }
+      } catch(e){
+        // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
+        // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
+        showToast('Kaydedilemedi: ' + e.message);
+        if (lastMatchData) updatePkTurnUI(lastMatchData, myUid);
+      }
     }
 
     // Maç sonucuna göre kupa/para ödülünü tek yerden hesaplar, tutarlılık sağlar.
@@ -1474,6 +1540,7 @@
       document.getElementById('shot-pips').innerHTML = '';
       resetPkVisual();
       playVsIntro();
+      clearTurnTimer();
       pkAction = null;
       setPkRole('hidden');
       setPkZonesMode('hidden');
@@ -1498,6 +1565,7 @@
           setPkRole('shoot');
           document.getElementById('pk-status').textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
           pkAction = (dir) => {
+            clearTurnTimer();
             setPkRole('wait');
             document.getElementById('pk-status').textContent = botName + ' dalıyor...';
             const keeperDir = botPickDir();
@@ -1513,7 +1581,9 @@
             }, 350);
           };
           setPkZonesMode('shoot');
+          startTurnTimer();
         } else {
+          clearTurnTimer();
           setPkRole('wait');
           document.getElementById('pk-status').textContent = botName + ' şutunu hazırlıyor. Az sonra sıra kaleciliğe gelecek...';
           setPkZonesMode('hidden');
@@ -1523,6 +1593,7 @@
             setPkRole('keep');
             document.getElementById('pk-status').textContent = botName + ' şutunu attı! Kalecisin — köşeyi tahmin edip dal.';
             pkAction = (keeperDir) => {
+              clearTurnTimer();
               const result = keeperDir === dir ? 'miss' : 'goal';
               setPkRole('hidden');
               document.getElementById('pk-status').textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
@@ -1533,6 +1604,7 @@
               });
             };
             setPkZonesMode('keep');
+            startTurnTimer();
           }, 700);
         }
       }
@@ -1593,6 +1665,7 @@
 
     document.getElementById('result-home-btn').onclick = () => {
       if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      clearTurnTimer();
       activeMatchId = null;
       showScreen('home-screen');
     };
@@ -1602,6 +1675,7 @@
     function cleanupAll(){
       if (chatUnsub){ chatUnsub(); chatUnsub = null; }
       if (matchUnsub){ matchUnsub(); matchUnsub = null; }
+      clearTurnTimer();
       stopSearching(false);
     }
   }
