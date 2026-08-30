@@ -48,13 +48,18 @@
     border-right:1px solid var(--border);
   }
 
-  /* stadium net pattern - signature background element */
-  .net-bg{
-    position:absolute; inset:0; z-index:0; opacity:0.10; pointer-events:none;
-    background-image:
-      repeating-linear-gradient(115deg, rgba(238,242,255,0.6) 0px, rgba(238,242,255,0.6) 1px, transparent 1px, transparent 26px),
-      repeating-linear-gradient(65deg, rgba(238,242,255,0.6) 0px, rgba(238,242,255,0.6) 1px, transparent 1px, transparent 26px);
+  /* stadium SVG background - signature background element */
+  #stadium-bg{
+    position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
   }
+  #stadium-bg svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .stadium-tier{ fill:none; stroke:rgba(238,242,255,0.07); stroke-width:1.5; }
+  .stadium-beam{ animation:beamPulse 5s ease-in-out infinite; }
+  .stadium-beam.b2{ animation-delay:2.4s; }
+  @keyframes beamPulse{ 0%,100%{ opacity:0.35; } 50%{ opacity:0.7; } }
+  .pitch-line{ stroke:rgba(238,242,255,0.10); stroke-width:1.4; fill:none; }
+  .icon{ width:1em; height:1em; display:inline-block; vertical-align:-0.15em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .icon.icon-fill{ fill:currentColor; stroke:none; }
 
   .screen{
     position:relative; z-index:1;
@@ -104,17 +109,18 @@
     background:var(--panel2); border:1px solid var(--border);
     padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; color:var(--gold2);
   }
+  .trophy-chip .icon, #leaderboard-link .icon, .lb-trophy .icon, #result-trophy .icon{ width:14px; height:14px; }
   #home-body{
     flex:1; width:100%; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:22px; position:relative;
   }
   .glow-ball{
     width:120px; height:120px; border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #fff, #cfd6e6 55%, #8b93a3 100%);
-    box-shadow:0 0 60px rgba(242,183,5,0.35), inset 0 -8px 14px rgba(0,0,0,0.25);
-    display:flex; align-items:center; justify-content:center; font-size:46px;
+    box-shadow:0 0 60px rgba(242,183,5,0.35);
+    display:flex; align-items:center; justify-content:center;
     animation:float 3.2s ease-in-out infinite;
   }
+  .glow-ball svg{ width:100%; height:100%; display:block; }
   @keyframes float{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-10px);} }
   #leaderboard-link{
     position:absolute; top:14px; right:14px;
@@ -133,14 +139,18 @@
   }
   #match-fab span.small{ font-size:10px; font-weight:600; opacity:0.75; text-transform:none; }
   #match-fab:active{ transform:scale(0.96); }
+  #match-fab .icon{ width:14px; height:14px; }
 
   /* ---- Chat bubble + panel (bottom left) ---- */
   #chat-fab{
     position:absolute; left:18px; bottom:22px; z-index:6;
     width:52px; height:52px; border-radius:50%; border:1px solid var(--border);
-    background:var(--panel2); color:var(--text); font-size:22px;
+    background:var(--panel2); color:var(--text);
     display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
+  #chat-fab .icon{ width:22px; height:22px; }
+  #chat-head .icon{ width:14px; height:14px; }
+  #chat-close-btn .icon, #toast .dismiss .icon{ width:14px; height:14px; }
   #chat-panel{
     position:absolute; left:14px; bottom:14px; z-index:10;
     width:260px; max-height:340px;
@@ -182,8 +192,9 @@
     width:110px; height:110px; border-radius:50%;
     border:3px solid var(--border);
     display:flex; align-items:center; justify-content:center;
-    position:relative;
+    position:relative; color:var(--gold2);
   }
+  .radar .icon{ width:42px; height:42px; }
   .radar::before{
     content:''; position:absolute; inset:-3px; border-radius:50%;
     border:3px solid var(--gold); border-top-color:transparent; border-right-color:transparent;
@@ -246,16 +257,20 @@
     display:flex; flex-direction:column; align-items:center; gap:3px; letter-spacing:0.5px;
   }
   .pk-zone-btn span{ font-size:16px; }
+  .pk-zone-btn .icon{ width:16px; height:16px; }
   .pk-zone-btn:active{ transform:scale(0.95); }
   .pk-zone-btn.keeper-mode{ border-color:rgba(239,68,68,0.55); background:rgba(239,68,68,0.08); }
   .pk-zone-btn:disabled{ opacity:0.3; }
 
   #shot-pips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; min-height:26px; }
-  .pip{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; border:1.5px solid var(--border); flex-shrink:0; }
-  .pip.goal{ background:rgba(34,197,94,0.15); border-color:var(--green); }
-  .pip.miss{ background:rgba(239,68,68,0.15); border-color:var(--red); }
+  .pip{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1.5px solid var(--border); flex-shrink:0; }
+  .pip .icon{ width:13px; height:13px; }
+  .pip.goal{ background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green); }
+  .pip.miss{ background:rgba(239,68,68,0.15); border-color:var(--red); color:var(--red); }
 
   /* ---- Result ---- */
+  #result-emoji{ width:64px; height:64px; color:var(--gold2); }
+  #result-emoji .icon{ width:100%; height:100%; }
   #result-screen h1{ font-size:26px; margin:0; }
   #result-trophy{ font-size:20px; font-weight:800; }
   #result-trophy.pos{ color:var(--green); }
@@ -300,8 +315,80 @@
 </head>
 <body>
 
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <defs>
+    <symbol id="icon-trophy" viewBox="0 0 24 24">
+      <path d="M7 4h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4Z"/>
+      <path d="M7 5H4a1 1 0 0 0-1 1v1a4 4 0 0 0 4 4"/>
+      <path d="M17 5h3a1 1 0 0 1 1 1v1a4 4 0 0 1-4 4"/>
+      <path d="M12 13v3"/>
+      <path d="M9 20h6"/>
+      <path d="M10 16h4l1 4H9l1-4Z"/>
+    </symbol>
+    <symbol id="icon-ball" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7.2 15.8 10l-1.5 4.6h-4.6L8.2 10 12 7.2Z"/>
+      <path d="M12 3v4.2M4.8 8.3l3.4 1.7M6.2 18.6l2-4.9M17.8 18.6l-2-4.9M19.2 8.3l-3.4 1.7"/>
+    </symbol>
+    <symbol id="icon-bolt" viewBox="0 0 24 24">
+      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24">
+      <path d="M4 5h16v11H9l-4 4v-4H4V5Z"/>
+      <path d="M8 9.5h8M8 12.5h5"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M5 5 19 19M19 5 5 19"/>
+    </symbol>
+    <symbol id="icon-radar" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="5"/>
+      <circle cx="12" cy="12" r="1.3" class="icon-fill"/>
+      <path d="M12 12 18 7"/>
+    </symbol>
+    <symbol id="icon-handshake" viewBox="0 0 24 24">
+      <path d="M2 12l4-4 4 3-3 3"/>
+      <path d="M22 12l-4-4-6 5 2 2 2-1.5"/>
+      <path d="M10 11l3 3-1.5 1.5a1.6 1.6 0 0 1-2.3 0L8 14.3"/>
+      <path d="M14 14l-1.3 1.3a1.6 1.6 0 0 1-2.3 0"/>
+    </symbol>
+    <symbol id="icon-frown" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M8.5 15.5a4 4 0 0 1 7 0"/>
+      <path d="M9 9.5h.01M15 9.5h.01"/>
+    </symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24">
+      <path d="M6 15l6-6 6 6"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div id="app">
-  <div class="net-bg"></div>
+  <div id="stadium-bg">
+    <svg viewBox="0 0 440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="beamGrad" cx="0" cy="0" r="1">
+          <stop offset="0%" stop-color="#f2b705" stop-opacity="0.16"/>
+          <stop offset="100%" stop-color="#f2b705" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="beamGrad2" cx="0" cy="0" r="1">
+          <stop offset="0%" stop-color="#22c55e" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- floodlight beams -->
+      <path class="stadium-beam" d="M-40 -40 L120 220 L-220 220 Z" fill="url(#beamGrad)"/>
+      <path class="stadium-beam b2" d="M480 -40 L320 220 L660 220 Z" fill="url(#beamGrad2)"/>
+      <!-- stadium tier arcs -->
+      <path class="stadium-tier" d="M-60 40 Q220 -60 500 40"/>
+      <path class="stadium-tier" d="M-60 78 Q220 -20 500 78"/>
+      <path class="stadium-tier" d="M-60 116 Q220 20 500 116"/>
+      <!-- distant pitch markings -->
+      <circle class="pitch-line" cx="220" cy="640" r="70"/>
+      <line class="pitch-line" x1="-40" y1="640" x2="480" y2="640"/>
+      <path class="pitch-line" d="M120 900 v-90 a100 100 0 0 1 200 0 v90"/>
+    </svg>
+  </div>
 
   <div id="auth-screen" class="screen">
     <h1 class="brand">İOZ<br>FOOTBALL PENALTY<small>ONLINE</small></h1>
@@ -325,21 +412,41 @@
         <div class="sub">İOZ FOOTBALL PENALTY ONLINE</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
-        <div class="trophy-chip">🏆 <span id="home-trophies">0</span></div>
+        <div class="trophy-chip"><svg class="icon"><use href="#icon-trophy"/></svg> <span id="home-trophies">0</span></div>
         <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Log out</button>
       </div>
     </div>
     <div id="home-body">
-      <button id="leaderboard-link" class="btn btn-ghost">🏆 Ranking</button>
-      <div class="glow-ball">⚽</div>
+      <button id="leaderboard-link" class="btn btn-ghost"><svg class="icon"><use href="#icon-trophy"/></svg> Ranking</button>
+      <div class="glow-ball">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="ballShade" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="55%" stop-color="#d7deec"/>
+              <stop offset="100%" stop-color="#8b93a3"/>
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="46" fill="url(#ballShade)"/>
+          <g fill="none" stroke="#1c2333" stroke-width="2" stroke-linejoin="round">
+            <path d="M50 28 L64 38 L59 55 L41 55 L36 38 Z" fill="#1c2333"/>
+            <path d="M50 28 V12"/>
+            <path d="M64 38 L84 32"/>
+            <path d="M59 55 L69 74"/>
+            <path d="M41 55 L31 74"/>
+            <path d="M36 38 L16 32"/>
+          </g>
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#6b7386" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+      </div>
       <div style="text-align:center;">
         <div class="display" style="font-size:20px; color:var(--gold2);">READY TO SCORE?</div>
         <p class="sub">Tap 1v1 MATCH to find an opponent.</p>
       </div>
-      <button id="match-fab"><span>⚡ 1v1 MATCH</span><span class="small">find opponent</span></button>
-      <button id="chat-fab">💬</button>
+      <button id="match-fab"><span><svg class="icon"><use href="#icon-bolt"/></svg> 1v1 MATCH</span><span class="small">find opponent</span></button>
+      <button id="chat-fab"><svg class="icon"><use href="#icon-chat"/></svg></button>
       <div id="chat-panel">
-        <div id="chat-head"><span>💬 Match Chat</span><button id="chat-close-btn">✕</button></div>
+        <div id="chat-head"><span><svg class="icon"><use href="#icon-chat"/></svg> Match Chat</span><button id="chat-close-btn"><svg class="icon"><use href="#icon-close"/></svg></button></div>
         <div id="chat-messages"></div>
         <div id="chat-input-row">
           <input id="chat-input" type="text" maxlength="300" placeholder="Say something...">
@@ -350,7 +457,7 @@
   </div>
 
   <div id="searching-screen" class="screen hidden">
-    <div class="radar">🔍</div>
+    <div class="radar"><svg class="icon"><use href="#icon-radar"/></svg></div>
     <div id="search-timer" class="display">10</div>
     <div id="search-status">Searching for a real opponent...</div>
     <button id="cancel-search-btn" class="btn btn-ghost">Cancel</button>
@@ -404,23 +511,23 @@
 
     <div id="pk-status">-</div>
     <div id="pk-zones">
-      <button class="pk-zone-btn" data-dir="left"><span>◀</span>LEFT</button>
-      <button class="pk-zone-btn" data-dir="center"><span>▲</span>CENTER</button>
-      <button class="pk-zone-btn" data-dir="right"><span>▶</span>RIGHT</button>
+      <button class="pk-zone-btn" data-dir="left"><span><svg class="icon" style="transform:rotate(-90deg);"><use href="#icon-chevron"/></svg></span>LEFT</button>
+      <button class="pk-zone-btn" data-dir="center"><span><svg class="icon"><use href="#icon-chevron"/></svg></span>CENTER</button>
+      <button class="pk-zone-btn" data-dir="right"><span><svg class="icon" style="transform:rotate(90deg);"><use href="#icon-chevron"/></svg></span>RIGHT</button>
     </div>
     <div id="shot-pips"></div>
   </div>
 
   <div id="result-screen" class="screen hidden">
-    <div id="result-emoji" style="font-size:52px;">⚽</div>
+    <div id="result-emoji"><svg class="icon"><use href="#icon-ball"/></svg></div>
     <h1 class="display" id="result-title">DRAW</h1>
-    <div id="result-trophy">+0 🏆</div>
+    <div id="result-trophy">+0 <svg class="icon"><use href="#icon-trophy"/></svg></div>
     <button id="result-home-btn" class="btn btn-gold btn-block">Back to Home</button>
   </div>
 
   <div id="leaderboard-screen" class="screen hidden">
     <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-      <h1 class="display" style="font-size:20px; margin:0;">🏆 RANKING</h1>
+      <h1 class="display" style="font-size:20px; margin:0; display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#icon-trophy"/></svg> RANKING</h1>
       <button id="lb-back-btn" class="btn btn-ghost">Back</button>
     </div>
     <div id="lb-list"></div>
@@ -428,7 +535,7 @@
 
 </div>
 
-<div id="toast"><span id="toast-text"></span><button class="dismiss" id="toast-dismiss">✕</button></div>
+<div id="toast"><span id="toast-text"></span><button class="dismiss" id="toast-dismiss"><svg class="icon"><use href="#icon-close"/></svg></button></div>
 <div id="build-tag"></div>
 <div id="config-warning"></div>
 <div id="debug-log"></div>
@@ -697,8 +804,7 @@
       document.getElementById('home-username').textContent = playerName;
       document.getElementById('home-trophies').textContent = playerTrophies;
       showScreen('home-screen');
-      startChatListener();
-      window.iozLog('home-screen gösterildi, chat listener başladı');
+      window.iozLog('home-screen gösterildi (chat listener sadece sohbet açılınca başlayacak)');
     }
 
     function refreshTrophyDisplay(){
@@ -726,7 +832,7 @@
           row.innerHTML = `
             <div class="lb-rank ${rankClass}">${rank}</div>
             <div class="lb-name">${escapeHtml(data.username || '?')}</div>
-            <div class="lb-trophy">🏆 ${data.trophies || 0}</div>
+            <div class="lb-trophy"><svg class="icon"><use href="#icon-trophy"/></svg> ${data.trophies || 0}</div>
           `;
           list.appendChild(row);
         });
@@ -737,9 +843,19 @@
     }
 
     // ---------- Chat (bottom-left slide panel) ----------
+    // Sohbet sadece kullanıcı butona basıp paneli açtığında Firestore'u dinlemeye
+    // başlar; panel kapatılınca dinleyici hemen durur. Böylece chat, ana ekrana
+    // giren HERKES için sürekli arka planda okuma yapmaz — sadece paneli açan
+    // kişi, sadece açık olduğu süre boyunca okuma üretir.
     const chatPanel = document.getElementById('chat-panel');
-    document.getElementById('chat-fab').onclick = () => chatPanel.classList.add('open');
-    document.getElementById('chat-close-btn').onclick = () => chatPanel.classList.remove('open');
+    document.getElementById('chat-fab').onclick = () => {
+      chatPanel.classList.add('open');
+      startChatListener();
+    };
+    document.getElementById('chat-close-btn').onclick = () => {
+      chatPanel.classList.remove('open');
+      stopChatListener();
+    };
 
     function startChatListener(){
       if (chatUnsub) return;
@@ -750,6 +866,9 @@
         list.reverse();
         renderChat(list);
       });
+    }
+    function stopChatListener(){
+      if (chatUnsub){ chatUnsub(); chatUnsub = null; }
     }
 
     function renderChat(list){
@@ -777,12 +896,13 @@
       } catch(e){ showToast(e.message); }
     }
     async function pruneOldChat(){
-      const q = query(collection(db,'messages'), orderBy('createdAt','asc'));
+      // Tüm koleksiyonu okumak yerine sadece limit'in biraz üzerini okuyoruz,
+      // böylece her mesaj gönderiminde gereksiz yere yüzlerce okuma harcanmaz.
+      const q = query(collection(db,'messages'), orderBy('createdAt','desc'), limit(MAX_CHAT_MESSAGES + 10));
       const snap = await getDocs(q);
-      const extra = snap.size - MAX_CHAT_MESSAGES;
-      if (extra > 0){
-        await Promise.all(snap.docs.slice(0, extra).map((d)=> deleteDoc(d.ref)));
-      }
+      if (snap.size <= MAX_CHAT_MESSAGES) return;
+      const extraDocs = snap.docs.slice(MAX_CHAT_MESSAGES);
+      await Promise.all(extraDocs.map((d) => deleteDoc(d.ref)));
     }
     document.getElementById('chat-send-btn').onclick = sendChat;
     document.getElementById('chat-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(); });
@@ -840,7 +960,7 @@
       shots.forEach((s) => {
         const pip = document.createElement('div');
         pip.className = 'pip ' + s.result;
-        pip.textContent = s.result === 'goal' ? '⚽' : '✕';
+        pip.innerHTML = '<svg class="icon"><use href="#icon-' + (s.result === 'goal' ? 'ball' : 'close') + '"/></svg>';
         pip.title = (s.uid === myUid ? 'You' : 'Opponent') + ' — ' + (s.result === 'goal' ? 'GOAL' : 'SAVED');
         box.appendChild(pip);
       });
@@ -1216,10 +1336,10 @@
       const emojiEl = document.getElementById('result-emoji');
       const titleEl = document.getElementById('result-title');
       const trophyEl = document.getElementById('result-trophy');
-      if (kind === 'win'){ emojiEl.textContent='🏆'; titleEl.textContent='VICTORY'; }
-      else if (kind === 'lose'){ emojiEl.textContent='😔'; titleEl.textContent='DEFEAT'; }
-      else { emojiEl.textContent='🤝'; titleEl.textContent='DRAW'; }
-      trophyEl.textContent = (delta>0?'+':'') + delta + ' 🏆';
+      const iconName = kind === 'win' ? 'trophy' : (kind === 'lose' ? 'frown' : 'handshake');
+      emojiEl.innerHTML = '<svg class="icon"><use href="#icon-' + iconName + '"/></svg>';
+      titleEl.textContent = kind === 'win' ? 'VICTORY' : (kind === 'lose' ? 'DEFEAT' : 'DRAW');
+      trophyEl.innerHTML = (delta>0?'+':'') + delta + ' <svg class="icon"><use href="#icon-trophy"/></svg>';
       trophyEl.className = delta>0 ? 'pos' : (delta<0 ? 'neg' : 'zero');
       showScreen('result-screen');
     }
