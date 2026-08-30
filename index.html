@@ -617,6 +617,7 @@
   // ============================================================
 
   const MAX_CHAT_MESSAGES = 20;
+  const CHAT_MESSAGE_TTL_HOURS = 24; // Firestore TTL politikası bu süre geçince mesajı otomatik siler
   const SEARCH_SECONDS = 10;
   const SHOTS_PER_PLAYER = 2;
 
@@ -899,19 +900,17 @@
       input.value = '';
       try{
         await addDoc(collection(db,'messages'), {
-          uid: currentUser.uid, name: playerName, content: content.slice(0,300), createdAt: serverTimestamp()
+          uid: currentUser.uid, name: playerName, content: content.slice(0,300), createdAt: serverTimestamp(),
+          // Eski mesajları client'tan okuyup silmek yerine (bu, her mesajda onlarca
+          // gereksiz okumaya sebep oluyordu) Firestore'un native TTL (Time-to-Live)
+          // özelliğine bırakıyoruz: bu alanın geçmiş olduğu dokümanları Google arka
+          // planda, bize hiçbir okuma/işlem maliyeti çıkarmadan kendisi siliyor.
+          // ÖNEMLİ: Bunun çalışması için Firebase Console > Firestore Database >
+          // TTL sekmesinden 'messages' koleksiyonuna 'expireAt' alanı üzerinden
+          // bir TTL politikası eklenmesi gerekiyor (tek seferlik, kod gerektirmez).
+          expireAt: new Date(Date.now() + CHAT_MESSAGE_TTL_HOURS * 60 * 60 * 1000)
         });
-        await pruneOldChat();
       } catch(e){ showToast(e.message); }
-    }
-    async function pruneOldChat(){
-      // Tüm koleksiyonu okumak yerine sadece limit'in biraz üzerini okuyoruz,
-      // böylece her mesaj gönderiminde gereksiz yere yüzlerce okuma harcanmaz.
-      const q = query(collection(db,'messages'), orderBy('createdAt','desc'), limit(MAX_CHAT_MESSAGES + 10));
-      const snap = await getDocs(q);
-      if (snap.size <= MAX_CHAT_MESSAGES) return;
-      const extraDocs = snap.docs.slice(MAX_CHAT_MESSAGES);
-      await Promise.all(extraDocs.map((d) => deleteDoc(d.ref)));
     }
     document.getElementById('chat-send-btn').onclick = sendChat;
     document.getElementById('chat-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(); });
@@ -1030,7 +1029,10 @@
       });
 
       tryFindOpponent(); // immediate attempt
-      searchInterval = setInterval(tryFindOpponent, 1800);
+      // Eskiden 1.8 saniyede bir yokluyorduk; bunu 3 saniyeye çıkarmak, arama
+      // ekranında kalan herkesin ürettiği toplam okuma sayısını ~%40 azaltıyor.
+      // 10 saniyelik arama süresinde hâlâ birkaç deneme hakkı kalıyor.
+      searchInterval = setInterval(tryFindOpponent, 3000);
       searchTimeout = setInterval(() => {
         searchSecondsLeft--;
         document.getElementById('search-timer').textContent = Math.max(searchSecondsLeft,0);
@@ -1044,7 +1046,9 @@
     async function tryFindOpponent(){
       if (!currentUser) return;
       try{
-        const q = query(collection(db,'queue'), orderBy('createdAt','asc'), limit(10));
+        // limit(10) yerine limit(5): tek bir uygun rakip bulmak için genelde
+        // yeterli, ve her yoklamanın okuma maliyetini yarıya indiriyor.
+        const q = query(collection(db,'queue'), orderBy('createdAt','asc'), limit(5));
         const snap = await getDocs(q);
         let candidate = null;
         snap.forEach((d) => {
