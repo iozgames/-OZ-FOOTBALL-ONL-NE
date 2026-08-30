@@ -769,6 +769,7 @@
   let activeMatchId = null;
   let activeMatchIsBot = false;
   let trophiesApplied = false;
+  let lastArmedTurnKey = null; // aynı tur/pendingShot durumu için butonları tekrar tekrar aktif etmeyi önler
 
   // ---------- DOM ----------
   const screens = ['auth-screen','username-screen','home-screen','searching-screen','match-screen','result-screen','leaderboard-screen'];
@@ -1312,6 +1313,12 @@
         });
         if (created){
           stopSearching(false);
+          // Eşleşme kurulduktan sonra kuyruk kayıtlarını hemen temizliyoruz;
+          // aksi halde eski "eşleşmiş" kayıtlar kuyrukta kalıp sonraki
+          // aramalarda (orderBy createdAt + limit 5) yer kaplamaya, hatta
+          // yeni oyuncuların birbirini bulmasını engellemeye başlıyordu.
+          deleteDoc(doc(db,'queue', currentUser.uid)).catch(()=>{});
+          deleteDoc(doc(db,'queue', candidate.id)).catch(()=>{});
           joinMatch(matchRef.id, true);
         }
       } catch(e){ /* ignore transient errors, will retry */ }
@@ -1346,6 +1353,7 @@
       trophiesApplied = false;
       lastRenderedShotCount = 0;
       lastMatchData = null;
+      lastArmedTurnKey = null;
       clearTurnTimer();
       pkAction = null;
       resetPkVisual();
@@ -1413,6 +1421,10 @@
       const pending = m.pendingShot || null;
       const turnUid = m.order[m.turnIndex % 2 === 0 ? 0 : 1];
       const iAmShooter = turnUid === myUid;
+      // Aynı tur/pendingShot durumu için ekran birden fazla kez render edilirse
+      // (örn. gecikmeli/artık bir Firestore bildirimi) butonları tekrar aktif
+      // etmeyip zaten atılmış bir şutun "tekrar atılabilmesini" engeller.
+      const turnKey = m.turnIndex + '|' + (pending ? (pending.shooterUid + ':' + pending.dir) : 'none');
 
       if (pending){
         if (pending.shooterUid === myUid){
@@ -1422,8 +1434,9 @@
           setPkRole('wait');
           setPkZonesMode('hidden');
           statusEl.textContent = 'Şutunu attın. Rakip kalecinin hangi köşeye dalacağını bekliyoruz...';
-        } else {
+        } else if (turnKey !== lastArmedTurnKey){
           // Keeper never sees the shooter's chosen corner — only that a shot is coming.
+          lastArmedTurnKey = turnKey;
           pkAction = (dir) => submitKeeperDirection(activeMatchId, dir);
           setPkRole('keep');
           setPkZonesMode('keep');
@@ -1431,11 +1444,14 @@
           startTurnTimer();
         }
       } else if (iAmShooter){
-        pkAction = (dir) => submitShotDirection(activeMatchId, dir);
-        setPkRole('shoot');
-        setPkZonesMode('shoot');
-        statusEl.textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
-        startTurnTimer();
+        if (turnKey !== lastArmedTurnKey){
+          lastArmedTurnKey = turnKey;
+          pkAction = (dir) => submitShotDirection(activeMatchId, dir);
+          setPkRole('shoot');
+          setPkZonesMode('shoot');
+          statusEl.textContent = 'Sıra sende — şutunu atacağın köşeyi seç!';
+          startTurnTimer();
+        }
       } else {
         clearTurnTimer();
         pkAction = null;
@@ -1462,6 +1478,7 @@
         // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
         // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
         showToast('Şut gönderilemedi: ' + e.message);
+        lastArmedTurnKey = null; // aynı tur olsa da butonları zorla yeniden aktif et
         if (lastMatchData) updatePkTurnUI(lastMatchData, myUid);
       }
     }
@@ -1494,6 +1511,7 @@
         // Yazma başarısız olsa bile oyunu kilitli bırakma: son bilinen maç
         // durumundan ekranı (butonlar + süre) yeniden kurup tekrar denemeye izin ver.
         showToast('Kaydedilemedi: ' + e.message);
+        lastArmedTurnKey = null; // aynı tur olsa da butonları zorla yeniden aktif et
         if (lastMatchData) updatePkTurnUI(lastMatchData, myUid);
       }
     }
