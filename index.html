@@ -252,6 +252,11 @@
     font-size:9px; color:rgba(238,242,255,0.35); pointer-events:none;
   }
   #config-warning{ position:fixed; top:8px; left:8px; right:8px; color:var(--gold2); font-size:11px; text-align:center; max-width:440px; margin:0 auto; z-index:50; }
+  #debug-log{ position:fixed; bottom:0; left:0; right:0; z-index:997; max-width:440px; margin:0 auto;
+    background:rgba(0,0,0,0.75); color:#7CFF7C; font-family:monospace; font-size:10px;
+    max-height:110px; overflow-y:auto; padding:4px 8px; display:none; }
+  #debug-log.show{ display:block; }
+  #debug-log div{ white-space:pre-wrap; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -349,6 +354,7 @@
 <div id="toast"><span id="toast-text"></span><button class="dismiss" id="toast-dismiss">✕</button></div>
 <div id="build-tag"></div>
 <div id="config-warning"></div>
+<div id="debug-log"></div>
 
 <script>
   // Telefonda gerçek konsolu görmek için: siteyi ...?debug=1 ile açın,
@@ -359,6 +365,22 @@
     s.onload = function(){ eruda.init(); };
     document.head.appendChild(s);
   }
+
+  // Ekranın kendi üstünde, konsola gerek kalmadan adım adım durum kaydı.
+  // eruda CDN engellense bile bu her zaman çalışır (dış bağlantı gerektirmez).
+  window.iozLog = function(msg){
+    try{
+      var box = document.getElementById('debug-log');
+      if (!box) return;
+      if (location.search.indexOf('debug') !== -1) box.classList.add('show');
+      var line = document.createElement('div');
+      var t = new Date().toISOString().slice(11,19);
+      line.textContent = '[' + t + '] ' + msg;
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+    }catch(err){}
+  };
+  window.iozLog('sayfa yüklendi, ilk script çalıştı');
 </script>
 <script>
   window.__iozAppBooted = false;
@@ -462,15 +484,19 @@
     return d.innerHTML;
   }
 
+  window.iozLog('modül script başladı');
+
   const configOk = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('BURAYA');
   if (!configOk){
     configWarning.textContent = 'Firebase config missing.';
     document.getElementById('google-btn').disabled = true;
+    window.iozLog('HATA: firebaseConfig eksik/placeholder');
   } else {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     provider = new GoogleAuthProvider();
+    window.iozLog('firebase init tamam (app/auth/db hazır)');
 
     const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const googleBtn = document.getElementById('google-btn');
@@ -479,8 +505,10 @@
     // butonu kilitleyip kullanıcıya "giriş yapılıyor" geri bildirimi veriyoruz.
     googleBtn.disabled = true;
     googleBtn.textContent = 'Loading...';
+    window.iozLog('getRedirectResult çağrılıyor...');
     getRedirectResult(auth)
-      .catch((e)=> showToast(translateAuthError(e)))
+      .then((res) => window.iozLog('getRedirectResult sonuç: ' + (res && res.user ? ('user=' + res.user.uid) : 'null (redirect yok / ilk yükleme)')))
+      .catch((e)=> { window.iozLog('getRedirectResult HATA: ' + (e.code || e.message)); showToast(translateAuthError(e)); })
       .finally(() => {
         googleBtn.disabled = false;
         googleBtn.textContent = 'Sign in with Google';
@@ -529,23 +557,33 @@
     };
 
     onAuthStateChanged(auth, async (user) => {
+      window.iozLog('onAuthStateChanged tetiklendi: ' + (user ? ('uid=' + user.uid) : 'null (çıkış yapılmış)'));
       currentUser = user;
       if (!user){
         playerName = null;
         cleanupAll();
-        showScreen('auth');
+        showScreen('auth-screen');
         return;
       }
       try{
-        const userDoc = await getDoc(doc(db,'users', user.uid));
+        window.iozLog('users/' + user.uid + ' dokümanı okunuyor...');
+        const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT: Firestore ' + ms + 'ms içinde cevap vermedi')), ms));
+        const userDoc = await Promise.race([
+          getDoc(doc(db,'users', user.uid)),
+          timeout(9000)
+        ]);
+        window.iozLog('users dokümanı okundu: exists=' + userDoc.exists() + (userDoc.exists() ? (' username=' + userDoc.data().username) : ''));
         if (userDoc.exists() && userDoc.data().username){
           playerName = userDoc.data().username;
           playerTrophies = userDoc.data().trophies || 0;
+          window.iozLog('enterHome() çağrılıyor');
           enterHome();
         } else {
-          showScreen('username');
+          window.iozLog('username-screen gösteriliyor (kayıtlı kullanıcı adı yok)');
+          showScreen('username-screen');
         }
       } catch(e){
+        window.iozLog('HATA (getDoc/users): ' + (e.code || e.message));
         showToast(translateAuthError(e));
       }
     });
@@ -580,10 +618,12 @@
 
     // ---------- Home ----------
     function enterHome(){
+      window.iozLog('enterHome() içindeyiz, home-screen gösteriliyor');
       document.getElementById('home-username').textContent = playerName;
       document.getElementById('home-trophies').textContent = playerTrophies;
       showScreen('home-screen');
       startChatListener();
+      window.iozLog('home-screen gösterildi, chat listener başladı');
     }
 
     function refreshTrophyDisplay(){
