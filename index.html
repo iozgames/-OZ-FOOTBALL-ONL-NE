@@ -109,7 +109,12 @@
     background:var(--panel2); border:1px solid var(--border);
     padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; color:var(--gold2);
   }
-  .trophy-chip .icon, #leaderboard-link .icon, .lb-trophy .icon, #result-trophy .icon{ width:14px; height:14px; }
+  .money-chip{
+    display:flex; align-items:center; gap:6px;
+    background:var(--panel2); border:1px solid var(--border);
+    padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; color:var(--green);
+  }
+  .trophy-chip .icon, .money-chip .icon, #leaderboard-link .icon, .lb-trophy .icon, #result-trophy .icon, #result-money .icon{ width:14px; height:14px; }
   #home-body{
     flex:1; width:100%; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:22px; position:relative;
@@ -206,11 +211,40 @@
 
   /* ---- Match screen ---- */
   #match-screen{ justify-content:flex-start; padding:16px; gap:12px; }
-  #match-vs{ display:flex; align-items:center; justify-content:space-between; width:100%; }
+  #match-vs{ display:flex; align-items:center; justify-content:space-between; width:100%; position:relative; }
   .vs-side{ flex:1; }
   .vs-side .pname{ font-weight:700; font-size:14px; }
   .vs-side .pscore{ font-size:26px; font-weight:800; color:var(--gold2); }
   .vs-mid{ font-size:12px; color:var(--muted); padding:0 8px; }
+
+  /* ---- VS intro: brief animated reveal when a match starts ---- */
+  #match-vs.vs-intro .vs-side{ animation: vsSlideIn .5s cubic-bezier(.2,.8,.3,1.05) both; }
+  #match-vs.vs-intro .vs-side:first-child{ animation-name: vsSlideInLeft; }
+  #match-vs.vs-intro .vs-side:last-child{ animation-name: vsSlideInRight; }
+  #match-vs.vs-intro .vs-mid{ animation: vsPunch .55s cubic-bezier(.3,1.6,.4,1) .15s both; }
+  @keyframes vsSlideInLeft{
+    0%{ opacity:0; transform:translateX(-36px); }
+    100%{ opacity:1; transform:translateX(0); }
+  }
+  @keyframes vsSlideInRight{
+    0%{ opacity:0; transform:translateX(36px); }
+    100%{ opacity:1; transform:translateX(0); }
+  }
+  @keyframes vsPunch{
+    0%{ opacity:0; transform:scale(2.4); }
+    60%{ opacity:1; transform:scale(0.9); }
+    100%{ opacity:1; transform:scale(1); }
+  }
+  #vs-flash{
+    position:absolute; inset:0; z-index:20; pointer-events:none;
+    background:radial-gradient(ellipse 260px 140px at 50% 50%, rgba(242,183,5,0.55), transparent 70%);
+    opacity:0;
+  }
+  #vs-flash.show{ animation: vsFlashFade .5s ease-out forwards; }
+  @keyframes vsFlashFade{
+    0%{ opacity:0.9; }
+    100%{ opacity:0; }
+  }
 
   /* ---- Penalty stage: goal + keeper + ball, the signature visual ---- */
   #pk-stage{
@@ -227,16 +261,71 @@
   .pk-spot{ fill:rgba(238,242,255,0.55); }
   .pk-stripe{ fill:rgba(255,255,255,0.05); }
 
-  #pk-keeper, #pk-ball{
-    transform-box: fill-box; transform-origin:50% 50%;
-    transition: transform .5s cubic-bezier(.22,.85,.25,1);
+  /* Kaleci ve top artık teleport gibi anlık transform yerine, çok-adımlı
+     keyframe animasyonlarıyla hareket ediyor: kaleci gerçek bir "uçarak
+     kurtarış" hissi verecek şekilde zıplayıp dönüyor, top da düz bir
+     kayma yerine kavis çizip küçülerek (uzaklaşma hissi) ve dönerek
+     kaleye/kaleciye doğru ilerliyor. */
+  #pk-keeper, #pk-ball{ transform-box: fill-box; transform-origin:50% 50%; }
+
+  @keyframes kDiveLeft{
+    0%{ transform:translate(0,0) rotate(0deg); }
+    22%{ transform:translate(-5px,-9px) rotate(-8deg); }
+    100%{ transform:translate(-58px,9px) rotate(-80deg); }
   }
-  #pk-keeper.dir-left{ transform:translateX(-62px) rotate(-24deg); }
-  #pk-keeper.dir-right{ transform:translateX(62px) rotate(24deg); }
-  #pk-keeper.dir-center{ transform:translateX(0) translateY(-3px) rotate(0deg); }
-  #pk-ball.dir-left{ transform:translate(-70px,-38px) scale(0.8); }
-  #pk-ball.dir-center{ transform:translate(0,-50px) scale(0.8); }
-  #pk-ball.dir-right{ transform:translate(70px,-38px) scale(0.8); }
+  @keyframes kDiveRight{
+    0%{ transform:translate(0,0) rotate(0deg); }
+    22%{ transform:translate(5px,-9px) rotate(8deg); }
+    100%{ transform:translate(58px,9px) rotate(80deg); }
+  }
+  @keyframes kDiveCenter{
+    0%{ transform:translate(0,0) scale(1); }
+    35%{ transform:translate(0,-7px) scale(1.07); }
+    100%{ transform:translate(0,3px) scale(1); }
+  }
+  #pk-keeper.anim-left{ animation:kDiveLeft .5s cubic-bezier(.30,1.35,.4,1) forwards; }
+  #pk-keeper.anim-right{ animation:kDiveRight .5s cubic-bezier(.30,1.35,.4,1) forwards; }
+  #pk-keeper.anim-center{ animation:kDiveCenter .4s ease-out forwards; }
+
+  @keyframes bLeftGoal{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    50%{ transform:translate(-45px,-58px) scale(.66) rotate(-250deg); }
+    100%{ transform:translate(-63px,-84px) scale(.42) rotate(-460deg); }
+  }
+  @keyframes bCenterGoal{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    50%{ transform:translate(0,-60px) scale(.62) rotate(230deg); }
+    100%{ transform:translate(0,-90px) scale(.4) rotate(420deg); }
+  }
+  @keyframes bRightGoal{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    50%{ transform:translate(45px,-58px) scale(.66) rotate(250deg); }
+    100%{ transform:translate(63px,-84px) scale(.42) rotate(460deg); }
+  }
+  @keyframes bLeftMiss{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    55%{ transform:translate(-42px,-46px) scale(.7) rotate(-230deg); }
+    80%{ transform:translate(-53px,-53px) scale(.66) rotate(-310deg); }
+    100%{ transform:translate(-46px,-38px) scale(.6) rotate(-350deg); }
+  }
+  @keyframes bCenterMiss{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    55%{ transform:translate(0,-50px) scale(.68) rotate(210deg); }
+    80%{ transform:translate(0,-57px) scale(.64) rotate(290deg); }
+    100%{ transform:translate(0,-40px) scale(.58) rotate(330deg); }
+  }
+  @keyframes bRightMiss{
+    0%{ transform:translate(0,0) scale(1) rotate(0deg); }
+    55%{ transform:translate(42px,-46px) scale(.7) rotate(230deg); }
+    80%{ transform:translate(53px,-53px) scale(.66) rotate(310deg); }
+    100%{ transform:translate(46px,-38px) scale(.6) rotate(350deg); }
+  }
+  #pk-ball.anim-left-goal{ animation:bLeftGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-center-goal{ animation:bCenterGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-right-goal{ animation:bRightGoal .52s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-left-miss{ animation:bLeftMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-center-miss{ animation:bCenterMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
+  #pk-ball.anim-right-miss{ animation:bRightMiss .48s cubic-bezier(.25,.6,.3,1) forwards; }
 
   #pk-result-flash{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
@@ -284,6 +373,8 @@
   #result-trophy.pos{ color:var(--green); }
   #result-trophy.neg{ color:var(--red); }
   #result-trophy.zero{ color:var(--gold2); }
+  #result-money{ font-size:16px; font-weight:700; color:var(--muted); }
+  #result-money.pos{ color:var(--green); }
 
   /* ---- Leaderboard ---- */
   #leaderboard-screen{ align-items:stretch; justify-content:flex-start; padding:16px; gap:10px; }
@@ -365,6 +456,11 @@
       <path d="M8.5 15.5a4 4 0 0 1 7 0"/>
       <path d="M9 9.5h.01M15 9.5h.01"/>
     </symbol>
+    <symbol id="icon-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="6.2" stroke-width="1.4"/>
+      <path d="M12 7.5v9M9.7 9.6c0-1 .95-1.7 2.3-1.7s2.3.6 2.3 1.5c0 2.1-4.6 1.5-4.6 3.6 0 .95.95 1.5 2.3 1.5s2.3-.7 2.3-1.7" stroke-width="1.4"/>
+    </symbol>
     <symbol id="icon-chevron" viewBox="0 0 24 24">
       <path d="M6 15l6-6 6 6"/>
     </symbol>
@@ -418,11 +514,12 @@
       <div class="who">
         <div class="name" id="home-username">-</div>
         <div class="sub">İOZ PENALTI ONLINE</div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+          <div class="money-chip"><svg class="icon"><use href="#icon-coin"/></svg> <span id="home-money">0</span></div>
+          <div class="trophy-chip"><svg class="icon"><use href="#icon-trophy"/></svg> <span id="home-trophies">0</span></div>
+        </div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <div class="trophy-chip"><svg class="icon"><use href="#icon-trophy"/></svg> <span id="home-trophies">0</span></div>
-        <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Çıkış Yap</button>
-      </div>
+      <button id="logout-btn" class="btn btn-ghost" style="padding:6px 10px; font-size:11px;">Çıkış Yap</button>
     </div>
     <div id="home-body">
       <button id="leaderboard-link" class="btn btn-ghost"><svg class="icon"><use href="#icon-trophy"/></svg> Sıralama</button>
@@ -473,6 +570,7 @@
 
   <div id="match-screen" class="screen hidden">
     <div id="match-vs">
+      <div id="vs-flash"></div>
       <div class="vs-side">
         <div class="pname" id="p1-name">Sen</div>
         <div class="pscore" id="p1-score">0</div>
@@ -502,17 +600,32 @@
         <path d="M100 118 Q160 108 220 118" fill="none" stroke="#eef2ff" stroke-width="2" opacity="0.6"/>
         <circle class="pk-spot" cx="160" cy="110" r="3"/>
         <g id="pk-keeper" class="dir-center">
-          <ellipse cx="160" cy="72" rx="15" ry="5" fill="rgba(0,0,0,0.28)"/>
-          <rect x="148" y="46" width="24" height="27" rx="7" fill="#181128"/>
-          <circle cx="160" cy="38" r="9" fill="#f0c9a0"/>
-          <rect x="129" y="47" width="17" height="8" rx="4" fill="#181128"/>
-          <rect x="174" y="47" width="17" height="8" rx="4" fill="#181128"/>
-          <circle cx="128" cy="51" r="5.5" fill="#eef2ff"/>
-          <circle cx="192" cy="51" r="5.5" fill="#eef2ff"/>
-          <rect x="150" y="72" width="8" height="17" rx="3" fill="#2a1d45"/>
-          <rect x="162" y="72" width="8" height="17" rx="3" fill="#2a1d45"/>
+          <ellipse cx="160" cy="90" rx="16" ry="4.5" fill="rgba(0,0,0,0.28)"/>
+          <!-- arka (sağ) kol ve eldiven -->
+          <path d="M172 54 Q190 48 198 34" stroke="#facc15" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <circle cx="200" cy="31" r="7.5" fill="#fffbe8" stroke="#b8860b" stroke-width="1.4"/>
+          <!-- bacaklar -->
+          <path d="M152 72 L146 90" stroke="#0b1220" stroke-width="9" stroke-linecap="round"/>
+          <path d="M168 72 L176 90" stroke="#0b1220" stroke-width="9" stroke-linecap="round"/>
+          <ellipse cx="144" cy="91" rx="6.5" ry="3.6" fill="#05070c"/>
+          <ellipse cx="178" cy="91" rx="6.5" ry="3.6" fill="#05070c"/>
+          <!-- şort -->
+          <rect x="147" y="66" width="26" height="12" rx="5" fill="#0b1220"/>
+          <!-- forma (gövde) -->
+          <path d="M144 44 Q160 37 176 44 L178 68 Q160 74 142 68 Z" fill="#16a34a"/>
+          <path d="M150 45 L160 68 L170 45" stroke="#eafff0" stroke-width="2" fill="none" opacity="0.5"/>
+          <!-- ön (sol) kol ve eldiven -->
+          <path d="M148 54 Q130 48 122 34" stroke="#facc15" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <circle cx="120" cy="31" r="7.5" fill="#fffbe8" stroke="#b8860b" stroke-width="1.4"/>
+          <!-- kafa -->
+          <circle cx="160" cy="34" r="9" fill="#f0c9a0"/>
+          <path d="M151 31 Q160 22 169 31 Q169 25 160 24 Q151 25 151 31Z" fill="#1c140a"/>
         </g>
-        <circle id="pk-ball" class="dir-center" cx="160" cy="110" r="7.5" fill="#eef2ff" stroke="#0a0f1c" stroke-width="1"/>
+        <g id="pk-ball" class="dir-center">
+          <circle cx="160" cy="110" r="7.5" fill="#eef2ff" stroke="#0a0f1c" stroke-width="1"/>
+          <path d="M160 104.7 156.2 107.6 157.6 112.2 162.4 112.2 163.8 107.6Z" fill="#0a0f1c"/>
+          <path d="M160 104.7V102.2M156.2 107.6l-2.2-1.5M163.8 107.6l2.2-1.5M157.6 112.2l-0.9 2.3M162.4 112.2l0.9 2.3" stroke="#0a0f1c" stroke-width="0.8" stroke-linecap="round"/>
+        </g>
       </svg>
       <div id="pk-result-flash"></div>
     </div>
@@ -530,7 +643,10 @@
   <div id="result-screen" class="screen hidden">
     <div id="result-emoji"><svg class="icon"><use href="#icon-ball"/></svg></div>
     <h1 class="display" id="result-title">BERABERE</h1>
-    <div id="result-trophy">+0 <svg class="icon"><use href="#icon-trophy"/></svg></div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div id="result-trophy">+0 <svg class="icon"><use href="#icon-trophy"/></svg></div>
+      <div id="result-money">+0 <svg class="icon"><use href="#icon-coin"/></svg></div>
+    </div>
     <button id="result-home-btn" class="btn btn-gold btn-block">Ana Sayfaya Dön</button>
   </div>
 
@@ -618,6 +734,7 @@
 
   const MAX_CHAT_MESSAGES = 20;
   const CHAT_MESSAGE_TTL_HOURS = 24; // Firestore TTL politikası bu süre geçince mesajı otomatik siler
+  const CHAT_SEND_COOLDOWN_MS = 2500; // spam mesajın her açık panelde okuma sayısını çarpmasını önler
   const SEARCH_SECONDS = 10;
   const SHOTS_PER_PLAYER = 2;
 
@@ -628,11 +745,16 @@
   let currentUser = null;
   let playerName = null;
   let playerTrophies = 0;
+  let playerMoney = 0;
 
   let chatUnsub = null;
   let matchUnsub = null;
   let myQueueUnsub = null;
   let searchInterval = null, searchTimeout = null, searchSecondsLeft = SEARCH_SECONDS;
+  let candidatesUnsub = null; // queue sorgusunu tek seferlik getDocs yerine canlı dinleyerek okur, sadece değişiklikte tetiklenir
+  let matchAttemptInFlight = false; // aynı anda birden fazla eşleşme denemesi tetiklenmesini engeller
+  let lbCache = { list: null, at: 0 }; // leaderboard'u kısa süre önbelleğe alır, art arda açılışlarda tekrar okumaz
+  const LB_CACHE_MS = 30000;
 
   let activeMatchId = null;
   let activeMatchIsBot = false;
@@ -768,6 +890,7 @@
         if (userDoc.exists() && userDoc.data().username){
           playerName = userDoc.data().username;
           playerTrophies = userDoc.data().trophies || 0;
+          playerMoney = userDoc.data().money || 0;
           window.iozLog('enterHome() çağrılıyor');
           enterHome();
         } else {
@@ -795,10 +918,11 @@
           const takenSnap = await tx.get(usernameRef);
           if (takenSnap.exists()) throw new Error('TAKEN');
           tx.set(usernameRef, { uid: currentUser.uid });
-          tx.set(doc(db,'users', currentUser.uid), { username: name, trophies: 0 });
+          tx.set(doc(db,'users', currentUser.uid), { username: name, trophies: 0, money: 0 });
         });
         playerName = name;
         playerTrophies = 0;
+        playerMoney = 0;
         enterHome();
       } catch(e){
         if (e.message === 'TAKEN') showUsernameError('Bu isim zaten alınmış.');
@@ -813,6 +937,7 @@
       window.iozLog('enterHome() içindeyiz, home-screen gösteriliyor');
       document.getElementById('home-username').textContent = playerName;
       document.getElementById('home-trophies').textContent = playerTrophies;
+      document.getElementById('home-money').textContent = playerMoney;
       showScreen('home-screen');
       window.iozLog('home-screen gösterildi (chat listener sadece sohbet açılınca başlayacak)');
     }
@@ -821,32 +946,50 @@
       document.getElementById('home-trophies').textContent = playerTrophies;
     }
 
+    function refreshMoneyDisplay(){
+      document.getElementById('home-money').textContent = playerMoney;
+    }
+
     document.getElementById('leaderboard-link').onclick = openLeaderboard;
     document.getElementById('lb-back-btn').onclick = () => showScreen('home-screen');
 
+    function renderLeaderboardList(rows){
+      const list = document.getElementById('lb-list');
+      list.innerHTML = '';
+      let rank = 0;
+      for (const data of rows){
+        rank++;
+        const row = document.createElement('div');
+        row.className = 'lb-row';
+        const rankClass = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+        row.innerHTML = `
+          <div class="lb-rank ${rankClass}">${rank}</div>
+          <div class="lb-name">${escapeHtml(data.username || '?')}</div>
+          <div class="lb-trophy"><svg class="icon"><use href="#icon-trophy"/></svg> ${data.trophies || 0}</div>
+        `;
+        list.appendChild(row);
+      }
+      if (rank===0) list.innerHTML = '<div class="sub">Henüz oyuncu yok.</div>';
+    }
+
     async function openLeaderboard(){
       showScreen('leaderboard-screen');
+      // Kısa süreli önbellek: aynı oturumda leaderboard art arda açılıp kapatılırsa
+      // (ör. kullanıcı birkaç kez göz atarsa) her seferinde yeniden Firestore
+      // okumak yerine, son 30 saniye içindeki sonucu tekrar kullanıyoruz.
+      if (lbCache.list && (Date.now() - lbCache.at) < LB_CACHE_MS){
+        renderLeaderboardList(lbCache.list);
+        return;
+      }
       const list = document.getElementById('lb-list');
       list.innerHTML = '<div class="sub">Yükleniyor...</div>';
       try{
         const q = query(collection(db,'users'), orderBy('trophies','desc'), limit(50));
         const snap = await getDocs(q);
-        list.innerHTML = '';
-        let rank = 0;
-        snap.forEach((d) => {
-          rank++;
-          const data = d.data();
-          const row = document.createElement('div');
-          row.className = 'lb-row';
-          const rankClass = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
-          row.innerHTML = `
-            <div class="lb-rank ${rankClass}">${rank}</div>
-            <div class="lb-name">${escapeHtml(data.username || '?')}</div>
-            <div class="lb-trophy"><svg class="icon"><use href="#icon-trophy"/></svg> ${data.trophies || 0}</div>
-          `;
-          list.appendChild(row);
-        });
-        if (rank===0) list.innerHTML = '<div class="sub">Henüz oyuncu yok.</div>';
+        const rows = [];
+        snap.forEach((d) => rows.push(d.data()));
+        lbCache = { list: rows, at: Date.now() };
+        renderLeaderboardList(rows);
       } catch(e){
         list.innerHTML = '<div class="error">Sıralama yüklenemedi.</div>';
       }
@@ -893,10 +1036,21 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    let lastChatSendAt = 0;
     async function sendChat(){
       const input = document.getElementById('chat-input');
       const content = input.value.trim();
       if (!content || !currentUser || !playerName) return;
+      // Her chat mesajı, o an paneli açık olan HERKESİN dinleyicisinde bir okuma
+      // tetikler (N kişi açıksa 1 mesaj = N okuma). Biri hızlıca art arda mesaj
+      // gönderirse bu çarpan etkisiyle günlük kotayı hızla tüketebilir; bu yüzden
+      // kısa bir gönderim aralığı (cooldown) koyuyoruz.
+      const now = Date.now();
+      if (now - lastChatSendAt < CHAT_SEND_COOLDOWN_MS){
+        showToast('Çok hızlı mesaj gönderiyorsun, birazcık bekle.');
+        return;
+      }
+      lastChatSendAt = now;
       input.value = '';
       try{
         await addDoc(collection(db,'messages'), {
@@ -965,8 +1119,15 @@
       const keeper = document.getElementById('pk-keeper');
       const ball = document.getElementById('pk-ball');
       const flash = document.getElementById('pk-result-flash');
-      keeper.setAttribute('class', 'dir-' + keeperDir);
-      ball.setAttribute('class', 'dir-' + dir);
+      // Önce nötr hale getirip bir reflow zorluyoruz ki aynı yöne art arda
+      // atılan şutlarda CSS animasyonu her seferinde baştan başlasın
+      // (aksi halde tarayıcı "zaten bu class'tayım" deyip animasyonu
+      // tekrar oynatmayabilir).
+      keeper.setAttribute('class', 'dir-center');
+      ball.setAttribute('class', 'dir-center');
+      void keeper.offsetWidth; void ball.offsetWidth;
+      keeper.classList.add('anim-' + keeperDir);
+      ball.classList.add('anim-' + dir + '-' + result);
       setTimeout(() => {
         flash.textContent = result === 'goal' ? 'GOL!' : 'KURTARDI!';
         flash.classList.add('show', result);
@@ -976,6 +1137,21 @@
           if (onDone) onDone();
         }, 950);
       }, 550);
+    }
+
+    // Rakip bulununca kısa bir "VS" giriş animasyonu oynatır: isim kartları
+    // iki yandan kayarak girer, VS yazısı zoom yaparak patlar, kısa bir
+    // altın parlama efekti eşlik eder. Saf görsel bir katman olduğu için
+    // eşleşme/oyun mantığının zamanlamasına dokunmuyor.
+    function playVsIntro(){
+      const vsBox = document.getElementById('match-vs');
+      const flash = document.getElementById('vs-flash');
+      vsBox.classList.remove('vs-intro');
+      flash.classList.remove('show');
+      void vsBox.offsetWidth;
+      vsBox.classList.add('vs-intro');
+      flash.classList.add('show');
+      setTimeout(() => { vsBox.classList.remove('vs-intro'); }, 700);
     }
 
     function renderPips(shots, myUid){
@@ -1028,11 +1204,18 @@
         }
       });
 
-      tryFindOpponent(); // immediate attempt
-      // Eskiden 1.8 saniyede bir yokluyorduk; bunu 3 saniyeye çıkarmak, arama
-      // ekranında kalan herkesin ürettiği toplam okuma sayısını ~%40 azaltıyor.
-      // 10 saniyelik arama süresinde hâlâ birkaç deneme hakkı kalıyor.
-      searchInterval = setInterval(tryFindOpponent, 3000);
+      // ÖNEMLİ OPTİMİZASYON: Eskiden her 3 saniyede bir getDocs() ile kuyruğu
+      // tamamen yeniden okuyorduk (her poll = 5 doküman okuması). Bunun yerine
+      // aynı sorguyu TEK SEFER canlı dinleyici (onSnapshot) olarak açıyoruz.
+      // Firestore, ilk anlık görüntüden sonra sadece GERÇEKTEN DEĞİŞEN
+      // dokümanlar için okuma ücretlendirir — kuyrukta hiçbir değişiklik
+      // yoksa (kimse katılmadıysa/eşleşmediyse) ekstra okuma OLUŞMAZ. Bu,
+      // arama süresi boyunca üretilen toplam okuma sayısını büyük ölçüde
+      // azaltıyor, özellikle çok sayıda kişi aynı anda arama yapıyorsa.
+      const qCandidates = query(collection(db,'queue'), orderBy('createdAt','asc'), limit(5));
+      candidatesUnsub = onSnapshot(qCandidates, (snap) => {
+        tryFindOpponentFromSnapshot(snap);
+      });
       searchTimeout = setInterval(() => {
         searchSecondsLeft--;
         document.getElementById('search-timer').textContent = Math.max(searchSecondsLeft,0);
@@ -1043,20 +1226,19 @@
       }, 1000);
     }
 
-    async function tryFindOpponent(){
-      if (!currentUser) return;
+    async function tryFindOpponentFromSnapshot(snap){
+      // Artık ayrı bir getDocs() çağrısı YOK: candidatesUnsub dinleyicisinden
+      // gelen anlık görüntüyü doğrudan kullanıyoruz, ekstra okuma maliyeti yok.
+      if (!currentUser || matchAttemptInFlight) return;
+      matchAttemptInFlight = true;
       try{
-        // limit(10) yerine limit(5): tek bir uygun rakip bulmak için genelde
-        // yeterli, ve her yoklamanın okuma maliyetini yarıya indiriyor.
-        const q = query(collection(db,'queue'), orderBy('createdAt','asc'), limit(5));
-        const snap = await getDocs(q);
         let candidate = null;
         snap.forEach((d) => {
           if (candidate) return;
           const data = d.data();
           if (d.id !== currentUser.uid && !data.matchId) candidate = { id:d.id, data };
         });
-        if (!candidate) return;
+        if (!candidate){ matchAttemptInFlight = false; return; }
 
         const matchRef = doc(collection(db,'matches'));
         let created = false;
@@ -1086,6 +1268,7 @@
           joinMatch(matchRef.id, true);
         }
       } catch(e){ /* ignore transient errors, will retry */ }
+      finally { matchAttemptInFlight = false; }
     }
 
     function onSearchTimeout(){
@@ -1097,6 +1280,8 @@
       if (searchInterval){ clearInterval(searchInterval); searchInterval = null; }
       if (searchTimeout){ clearInterval(searchTimeout); searchTimeout = null; }
       if (myQueueUnsub){ myQueueUnsub(); myQueueUnsub = null; }
+      if (candidatesUnsub){ candidatesUnsub(); candidatesUnsub = null; }
+      matchAttemptInFlight = false;
       if (clearMyDoc && currentUser){
         deleteDoc(doc(db,'queue', currentUser.uid)).catch(()=>{});
       }
@@ -1116,6 +1301,7 @@
       pkAction = null;
       resetPkVisual();
       showScreen('match-screen');
+      playVsIntro();
       document.getElementById('shot-pips').innerHTML = '';
       document.getElementById('pk-status').textContent = 'Maç yükleniyor...';
       setPkRole('hidden');
@@ -1246,15 +1432,19 @@
       } catch(e){ showToast('Kaydedilemedi: ' + e.message); }
     }
 
+    // Maç sonucuna göre kupa/para ödülünü tek yerden hesaplar, tutarlılık sağlar.
+    function trophyDeltaFor(kind){ return kind==='draw' ? 10 : (kind==='win' ? 30 : -10); }
+    function moneyDeltaFor(kind){ return kind==='draw' ? 50 : (kind==='win' ? 200 : 0); }
+
     async function finishRealMatch(m, myUid, oppUid){
       if (trophiesApplied) return;
       trophiesApplied = true;
-      let delta = 0;
-      if (m.winner === 'draw') delta = 10;
-      else if (m.winner === myUid) delta = 30;
-      else delta = -10;
-      await applyTrophyDelta(delta);
-      showResult(m.winner === 'draw' ? 'draw' : (m.winner === myUid ? 'win' : 'lose'), delta);
+      const kind = m.winner === 'draw' ? 'draw' : (m.winner === myUid ? 'win' : 'lose');
+      const trophyDelta = trophyDeltaFor(kind);
+      const moneyDelta = moneyDeltaFor(kind);
+      await applyTrophyDelta(trophyDelta);
+      await applyMoneyDelta(moneyDelta);
+      showResult(kind, trophyDelta, moneyDelta);
       if (matchUnsub){ matchUnsub(); matchUnsub = null; }
     }
 
@@ -1283,6 +1473,7 @@
       document.getElementById('p2-score').textContent = '0';
       document.getElementById('shot-pips').innerHTML = '';
       resetPkVisual();
+      playVsIntro();
       pkAction = null;
       setPkRole('hidden');
       setPkZonesMode('hidden');
@@ -1359,15 +1550,15 @@
     async function finishBotMatch(winner){
       if (trophiesApplied) return;
       trophiesApplied = true;
-      let delta = 0;
-      if (winner === 'draw') delta = 10;
-      else if (winner === 'you') delta = 30;
-      else delta = -10;
-      await applyTrophyDelta(delta);
-      showResult(winner === 'draw' ? 'draw' : (winner === 'you' ? 'win' : 'lose'), delta);
+      const kind = winner === 'draw' ? 'draw' : (winner === 'you' ? 'win' : 'lose');
+      const trophyDelta = trophyDeltaFor(kind);
+      const moneyDelta = moneyDeltaFor(kind);
+      await applyTrophyDelta(trophyDelta);
+      await applyMoneyDelta(moneyDelta);
+      showResult(kind, trophyDelta, moneyDelta);
     }
 
-    // ---------- Shared result / trophies ----------
+    // ---------- Shared result / trophies / money ----------
     async function applyTrophyDelta(delta){
       playerTrophies = Math.max(0, playerTrophies + delta);
       refreshTrophyDisplay();
@@ -1376,15 +1567,27 @@
       } catch(e){ /* non-fatal */ }
     }
 
-    function showResult(kind, delta){
+    async function applyMoneyDelta(delta){
+      if (delta === 0) return;
+      playerMoney = Math.max(0, playerMoney + delta);
+      refreshMoneyDisplay();
+      try{
+        await updateDoc(doc(db,'users', currentUser.uid), { money: increment(delta) });
+      } catch(e){ /* non-fatal */ }
+    }
+
+    function showResult(kind, trophyDelta, moneyDelta){
       const emojiEl = document.getElementById('result-emoji');
       const titleEl = document.getElementById('result-title');
       const trophyEl = document.getElementById('result-trophy');
+      const moneyEl = document.getElementById('result-money');
       const iconName = kind === 'win' ? 'trophy' : (kind === 'lose' ? 'frown' : 'handshake');
       emojiEl.innerHTML = '<svg class="icon"><use href="#icon-' + iconName + '"/></svg>';
       titleEl.textContent = kind === 'win' ? 'ZAFER' : (kind === 'lose' ? 'MAĞLUBİYET' : 'BERABERE');
-      trophyEl.innerHTML = (delta>0?'+':'') + delta + ' <svg class="icon"><use href="#icon-trophy"/></svg>';
-      trophyEl.className = delta>0 ? 'pos' : (delta<0 ? 'neg' : 'zero');
+      trophyEl.innerHTML = (trophyDelta>0?'+':'') + trophyDelta + ' <svg class="icon"><use href="#icon-trophy"/></svg>';
+      trophyEl.className = trophyDelta>0 ? 'pos' : (trophyDelta<0 ? 'neg' : 'zero');
+      moneyEl.innerHTML = (moneyDelta>0?'+':'') + moneyDelta + ' <svg class="icon"><use href="#icon-coin"/></svg>';
+      moneyEl.className = moneyDelta>0 ? 'pos' : '';
       showScreen('result-screen');
     }
 
