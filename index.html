@@ -498,7 +498,6 @@
     provider = new GoogleAuthProvider();
     window.iozLog('firebase init tamam (app/auth/db hazır)');
 
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const googleBtn = document.getElementById('google-btn');
 
     // Redirect flow sonrası geri dönünce burası tetiklenir; sonucu bekleyene kadar
@@ -518,32 +517,32 @@
       showToast('');
       googleBtn.disabled = true;
       googleBtn.textContent = 'Signing in...';
+      window.iozLog('google-btn tıklandı, signInWithPopup deneniyor');
 
-      // Mobil tarayıcılarda Google'ın popup penceresi genelde e-posta seçilir
-      // seçilmez kendiliğinden kapanıyor ve bu "popup-closed-by-user" olarak
-      // algılanıyor; kullanıcı gerçekten iptal etmediği halde sessizce giriş
-      // ekranında kalınıyordu. Mobilde doğrudan redirect kullanmak bunu çözer.
-      if (isMobile){
-        try{
-          await signInWithRedirect(auth, provider);
-        } catch(e){
-          showToast(translateAuthError(e));
-          googleBtn.disabled = false;
-          googleBtn.textContent = 'Sign in with Google';
-        }
-        return;
-      }
-
+      // NOT: Bu cihazda signInWithRedirect test edildi ve Google'dan dönüşte
+      // Chrome, redirect için sakladığı oturum bilgisini kaybediyor
+      // (getRedirectResult hep null dönüyordu). Bu yüzden mobilde de popup
+      // kullanıyoruz; popup storage'a bağımlı olmadığı için bu sorunu yaşamıyor.
       try{
-        await signInWithPopup(auth, provider);
+        const res = await signInWithPopup(auth, provider);
+        window.iozLog('signInWithPopup BAŞARILI: uid=' + res.user.uid);
         googleBtn.disabled = false;
         googleBtn.textContent = 'Sign in with Google';
       } catch(e){
         const code = e.code || '';
-        if (code.includes('popup-blocked') || code.includes('cancelled-popup-request') || code.includes('operation-not-supported') || code.includes('popup-closed-by-user')){
+        window.iozLog('signInWithPopup HATA: ' + code);
+        if (code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')){
+          // Kullanıcı gerçekten iptal etti; sessizce butonu eski haline döndür.
+          googleBtn.disabled = false;
+          googleBtn.textContent = 'Sign in with Google';
+          return;
+        }
+        if (code.includes('popup-blocked') || code.includes('operation-not-supported')){
+          window.iozLog('popup engellendi, signInWithRedirect deneniyor');
           try{
             await signInWithRedirect(auth, provider);
           } catch(e2){
+            window.iozLog('signInWithRedirect HATA: ' + (e2.code || e2.message));
             showToast(translateAuthError(e2));
             googleBtn.disabled = false;
             googleBtn.textContent = 'Sign in with Google';
